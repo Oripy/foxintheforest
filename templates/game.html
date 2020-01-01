@@ -1,0 +1,18 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div id="playingarea">
+    <div id="deck">
+        <div id="deck" class="playingcard back" title="Deck">&nbsp;<br />&nbsp;</div>
+        <div id="trump" class="playingcard empty" title="Trump card">&nbsp;<br />&nbsp;</div>
+    </div>
+    <div id="trick">
+        <div id="ot" class="playingcard empty" title="Opponent card">&nbsp;<br />&nbsp;</div><br />&nbsp;<br />
+        <div id="pt" class="playingcard empty" title="Your card">&nbsp;<br />&nbsp;</div>
+    </div>
+    <div id="opponenthand" title="Opponent hand"></div>
+    <div id="playerhand" title="Your hand"></div>
+    <div><div id="opponentscore" title="Opponent number of tricks won">0</div><div id="olasttrick" class="preview hidden"></div></div>
+    <div><div id="playerscore" title="Your number of tricks won">0</div><div id="plasttrick" class="preview hidden"></div></div>
+</div>
+{% endblock %}

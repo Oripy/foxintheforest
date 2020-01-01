@@ -1,0 +1,228 @@
+body {
+  background: #fafafa;
+  color: #333333;
+  margin-top: 5rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #444444;
+}
+
+.bg-steel {
+  background-color: #5f788a;
+}
+
+.site-header .navbar-nav .nav-link {
+  color: #cbd5db;
+}
+
+.site-header .navbar-nav .nav-link:hover {
+  color: #ffffff;
+}
+
+.site-header .navbar-nav .nav-link.active {
+  font-weight: 500;
+}
+
+.content-section {
+  background: #ffffff;
+  padding: 10px 20px;
+  border: 1px solid #dddddd;
+  border-radius: 3px;
+  margin-bottom: 20px;
+}
+
+.article-title {
+  color: #444444;
+}
+
+a.article-title:hover {
+  color: #428bca;
+  text-decoration: none;
+}
+
+.article-content {
+  white-space: pre-line;
+}
+
+.article-img {
+  height: 65px;
+  width: 65px;
+  margin-right: 16px;
+}
+
+.article-metadata {
+  padding-bottom: 1px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e3e3e3
+}
+
+.article-metadata a:hover {
+  color: #333;
+  text-decoration: none;
+}
+
+.article-svg {
+  width: 25px;
+  height: 25px;
+  vertical-align: middle;
+}
+
+.account-img {
+  height: 125px;
+  width: 125px;
+  margin-right: 20px;
+  margin-bottom: 16px;
+}
+
+.account-heading {
+  font-size: 2.5rem;
+}
+
+#playingarea
+{
+	display: grid;
+	grid-template-columns: 20% auto;
+	grid-template-rows: 25% auto 25%;
+
+  	grid-row-gap: 30px;
+
+	justify-items: center;
+	align-items: center;	
+}
+
+#playerhand
+{
+	grid-column: 2 / 2;
+	grid-row: 3 / 3;
+}
+
+#opponenthand
+{
+	grid-column: 2 / 2;
+	grid-row: 1 / 1;
+}
+
+#deck
+{
+	grid-column: 1 / 1;
+	grid-row: 2 / 2;
+}
+
+#trick
+{
+	grid-column: 2 / 2;
+	grid-row: 2 / 2;
+}
+
+#playerscore
+{
+	grid-column: 1 / 1;
+	grid-row: 3 / 3;
+}
+
+#opponentscore
+{
+	grid-column: 1 / 1;
+	grid-row: 1 / 1;
+}
+
+.playingcard
+{
+	width: 57px;
+	height: 89px;
+	padding: 5px;
+	border: solid 1px #808080;
+	background-color: white;
+	display: inline-block;
+	border-radius: 10px;
+	font-size: 24pt;
+	text-align: center;
+	
+	font-weight: bold;
+	font-family: "Arial Black", Gadget, sans-serif;
+	line-height: 1.15;
+	user-select: none;
+}
+
+#playerhand .playingcard
+{
+	margin: -8px;
+}
+
+#opponenthand .playingcard
+{
+	margin: -8px;
+}
+
+.playingcard.selectable:hover
+{
+	background-color: lightcyan;
+	/* transform-origin: bottom center; */
+	transform: scale(1.5)
+}
+
+.playingcard.selectable:active
+{
+	background-color: coral;
+	/* transform-origin: bottom center; */
+	transform: scale(1.6)
+}
+
+.playingcard.highlight
+{
+	background-color: lightgreen;
+}
+
+.back
+{
+	background: repeating-linear-gradient(
+		45deg,
+		#606dbc,
+		#606dbc 10px,
+		#465298 10px,
+		#465298 20px
+	);	
+}
+
+.empty
+{
+	background: lightgrey;	
+}
+
+.red
+{	
+	color: red;
+}
+
+.green
+{	
+	color: green;
+}
+
+.black
+{
+	color: black;
+}
+
+.hidden
+{
+	opacity: 1;
+}
+
+.preview
+{
+	transform: scale(0.5);
+}
+
+.preview > :first-child
+{
+	transform: rotate(-10deg);
+	margin: -8px;
+}
+
+.preview > :nth-child(2)
+{
+	transform: rotate(10deg);
+	margin: -8px;
+}

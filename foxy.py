@@ -12,7 +12,7 @@ def get_new_id():
     while True:
         new_id = uuid4()
         if not new_id in games: break
-    return new_id
+    return str(new_id)
 
 @app.route("/")
 def main():
@@ -24,7 +24,7 @@ def play():
     print(games)
     card_played = None
     if req["play"] == "new_game":
-        id = str(get_new_id())
+        id = get_new_id()
         games[id] = foxintheforest.new_game(id)
     elif req["player"] == 1:
         id = req["id"]

@@ -1,5 +1,5 @@
-let step = 0;
 let game_id = undefined;
+let prev_hand = [];
 
 document.getElementById("new").addEventListener("click", event => {
   fetch(`/play`, {
@@ -16,20 +16,22 @@ document.getElementById("new").addEventListener("click", event => {
       return;
     }
     response.json().then((res) => {
-      step = 0;
       game_id = res.id;
       updateState(res);
     });
   });
 });
 
-function updateState(res) {
-  state = res.states[step];
-
-  if (step != 0) {
-    card_played = res.steps[step-1][1];
+function updateState(state) {
+  if (state.plays.length > 0) {
+    card_played = state.plays[state.plays.length-1][1];
   } else {
     card_played = [undefined, undefined];
+  }
+  if (state.plays.length > 1) {
+    prev_card_played = state.plays[state.plays.length-2][1];
+  } else {
+    prev_card_played = [undefined, undefined];
   }
   let opponenthand = document.getElementById("opponenthand");
   while (opponenthand.firstChild) {
@@ -92,17 +94,27 @@ function updateState(res) {
   while (plasttrick.firstChild) {
     plasttrick.removeChild(plasttrick.firstChild);
   }
+  
   if (pdiscardlength >= 2) { 
+    let show_last_trick = false;
     for (let i = 0; i < 2; i++) {
-      let card = document.createElement("div");
       cardvalue = state.discards[0][pdiscardlength-2+i];
-      card.innerHTML = cardHTML(cardvalue);
-      card.className = "playingcard";
-      card.classList.add(suitHTML[cardvalue[1]][1]);
-      if ((cardvalue[0] == card_played[0]) && (cardvalue[1] == card_played[1])) {
-        card.classList.add("highlight");
+      if ((((cardvalue[0] == card_played[0]) && (cardvalue[1] == card_played[1])) || ((cardvalue[0] == prev_card_played[0]) && (cardvalue[1] == prev_card_played[1])))) {
+        show_last_trick = true;
       }
-      plasttrick.appendChild(card);
+    }
+    if (show_last_trick) {
+      for (let i = 0; i < 2; i++) {
+        let card = document.createElement("div");
+        cardvalue = state.discards[0][pdiscardlength-2+i];
+        card.innerHTML = cardHTML(cardvalue);
+        card.className = "playingcard";
+        card.classList.add(suitHTML[cardvalue[1]][1]);
+        if ((cardvalue[0] == card_played[0]) && (cardvalue[1] == card_played[1])) {
+          card.classList.add("highlight");
+        }
+        plasttrick.appendChild(card);
+      }
     }
   }
 
@@ -112,16 +124,25 @@ function updateState(res) {
     olasttrick.removeChild(olasttrick.firstChild);
   }
   if (odiscardlength >= 2) {
+    let show_last_trick = false;
     for (let i = 0; i < 2; i++) {
-      let card = document.createElement("div");
       cardvalue = state.discards[1][odiscardlength-2+i];
-      card.innerHTML = cardHTML(cardvalue);
-      card.className = "playingcard";
-      card.classList.add(suitHTML[cardvalue[1]][1]);
-      if ((cardvalue[0] == card_played[0]) && (cardvalue[1] == card_played[1])) {
-        card.classList.add("highlight");
+      if (((cardvalue[0] == card_played[0]) && (cardvalue[1] == card_played[1])) || ((cardvalue[0] == prev_card_played[0]) && (cardvalue[1] == prev_card_played[1]))) {
+        show_last_trick = true;
       }
-      olasttrick.appendChild(card);
+    }
+    if (show_last_trick) {
+      for (let i = 0; i < 2; i++) {
+        let card = document.createElement("div");
+        cardvalue = state.discards[1][odiscardlength-2+i];
+        card.innerHTML = cardHTML(cardvalue);
+        card.className = "playingcard";
+        card.classList.add(suitHTML[cardvalue[1]][1]);
+        if ((cardvalue[0] == card_played[0]) && (cardvalue[1] == card_played[1])) {
+          card.classList.add("highlight");
+        }
+        olasttrick.appendChild(card);
+      }
     }
   }
 
@@ -149,8 +170,11 @@ function updateState(res) {
     card.classList.add("playingcard");
     card.classList.add("selectable");
     card.classList.add(suitHTML[hand[i][1]][1]);
-    if ((hand[i][0] == card_played[0]) && (hand[i][1] == card_played[1])) {
-      card.classList.add("highlight");
+    card.classList.add("highlight");
+    for (let c of prev_hand) {
+      if ((hand[i][0] == c[0]) && (hand[i][1] == c[1])) {
+        card.classList.remove("highlight");
+      }
     }
     card.id = hand[i][0] + hand[i][1];
     playerhand.appendChild(card);
@@ -175,6 +199,7 @@ function updateState(res) {
       });
     });
   }
+  prev_hand = hand;
   if (state.current_player == 1) {
     setTimeout(() => {fetch(`/play`, {
         method: "POST",
@@ -195,7 +220,6 @@ function updateState(res) {
       });
     }, 1000);
   }
-  step++;
 }
 
 const suitHTML = {'h': ['&hearts;', 'red'],

@@ -10,8 +10,6 @@
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
 
-    <script defer type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
-
     <title>Fox in the Forest</title>
 </head>
 <body>
@@ -24,12 +22,12 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav mr-auto">
-              <a class="nav-item nav-link" id="new" href="#">New Game</a>
               <a class="nav-item nav-link" href="{{ url_for('lobby') }}">Lobby</a>
             </div>
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
               {% if current_user.is_authenticated %}
+                <a class="nav-item nav-link" href="#">{{ current_user.username }}</a>
                 <a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a>
               {% else %}
                 <a class="nav-item nav-link" href="{{ url_for('login') }}">Login</a>

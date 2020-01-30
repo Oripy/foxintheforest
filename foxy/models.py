@@ -22,7 +22,7 @@ class Games(db.Model):
     first_player = db.relationship("User", foreign_keys=[first_player_id])
     second_player = db.relationship("User", foreign_keys=[second_player_id])
 
-    state = db.Column(db.String(1000), nullable=False)
+    state = db.Column(db.String(1000))
 
     def __repr__(self):
         return f"Games('{self.date_created}', '{self.first_player}', '{self.second_player}', )"

@@ -1,10 +1,13 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<a class="btn btn-primary" href="" role="button">Create New Game</a>
-{% for game in games %}
-    <p>Id: {{ game }}</p>
-    <a class="btn btn-secondary" href="" role="button">Join</a>
+<a class="btn btn-primary" href="{{ url_for('new') }}" role="button">Create New Game</a>
+<h1>Your games:</h1>
+{% for game in own_games %}
+    <p>Id: {{ game.id }} <a class="btn btn-secondary" href="{{ url_for('game', id=game.id) }}" role="button">Join</a></p>
 {% endfor %}
-
+<h1>Open games:</h1>
+{% for game in open_games %}
+    <p>Id: {{ game.id }} <a class="btn btn-secondary" href="{{ url_for('game', id=game.id) }}" role="button">Join</a></p>
+{% endfor %}
 {% endblock %}

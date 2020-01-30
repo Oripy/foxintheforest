@@ -1,11 +1,35 @@
-let game_id = undefined;
-let prev_hand = [];
+const urlParams = new URLSearchParams(window.location.search);
 
-document.getElementById("new").addEventListener("click", event => {
-  fetch(`/play`, {
+let game_id = urlParams.get('id');
+let prev_hand = [];
+setTimeout(refresh, 1000);
+
+// document.getElementById("new").addEventListener("click", event => {
+//   fetch(`/play`, {
+//     method: "POST",
+//     credentials: "include",
+//     body: JSON.stringify({play: "new_game"}),
+//     cache: "no-cache",
+//     headers: new Headers({
+//       "content-type": "application/json"
+//     })
+//   }).then((response) => {
+//     if (response.status !== 200) {
+//       console.log(`Looks like there was a problem. Status code: ${response.status}`);
+//       return;
+//     }
+//     response.json().then((res) => {
+//       game_id = res.id;
+//       updateState(res);
+//     });
+//   });
+// });
+
+function refresh() {
+  fetch(`/state`, {
     method: "POST",
     credentials: "include",
-    body: JSON.stringify({play: "new_game"}),
+    body: JSON.stringify({id: game_id}),
     cache: "no-cache",
     headers: new Headers({
       "content-type": "application/json"
@@ -16,13 +40,15 @@ document.getElementById("new").addEventListener("click", event => {
       return;
     }
     response.json().then((res) => {
-      game_id = res.id;
       updateState(res);
+      setTimeout(refresh, 1000);
     });
   });
-});
+}
 
 function updateState(state) {
+  console.log(state);
+  player = parseInt(state.player)
   if (state.plays.length > 0) {
     card_played = state.plays[state.plays.length-1][1];
   } else {
@@ -37,7 +63,7 @@ function updateState(state) {
   while (opponenthand.firstChild) {
     opponenthand.removeChild(opponenthand.firstChild);
   }
-  for (let i = 0; i < state.hands[1].length; i++) {
+  for (let i = 0; i < state.hands[1 - player]; i++) {
     let card = document.createElement("div");
     card.innerHTML = cardHTML("empty");
     card.className = "playingcard back";
@@ -59,11 +85,11 @@ function updateState(state) {
   }
 
   let ot = document.getElementById("ot");
-  if (state.trick[1] != null) {
-    ot.innerHTML = cardHTML(state.trick[1]);
+  if (state.trick[1 - player] != null) {
+    ot.innerHTML = cardHTML(state.trick[1 - player]);
     ot.className = "playingcard";
-    ot.classList.add(suitHTML[state.trick[1][1]][1]);
-    if ((state.trick[1][0] == card_played[0]) && (state.trick[1][1] == card_played[1])) {
+    ot.classList.add(suitHTML[state.trick[1 - player][1]][1]);
+    if ((state.trick[1 - player][0] == card_played[0]) && (state.trick[1 - player][1] == card_played[1])) {
       ot.classList.add("highlight");
     }
   } else {
@@ -72,11 +98,11 @@ function updateState(state) {
   }
 
   let pt = document.getElementById("pt");
-  if (state.trick[0] != null) {
-    pt.innerHTML = cardHTML(state.trick[0]);
+  if (state.trick[player] != null) {
+    pt.innerHTML = cardHTML(state.trick[player]);
     pt.className = "playingcard";
-    pt.classList.add(suitHTML[state.trick[0][1]][1]);
-    if ((state.trick[0][0] == card_played[0]) && (state.trick[0][1] == card_played[1])) {
+    pt.classList.add(suitHTML[state.trick[player][1]][1]);
+    if ((state.trick[player][0] == card_played[0]) && (state.trick[player][1] == card_played[1])) {
       pt.classList.add("highlight");
     }
   } else {
@@ -85,12 +111,12 @@ function updateState(state) {
   }
 
   let pscore = document.getElementById("playerscore");
-  pscore.innerHTML = Math.floor(state.discards[0].length/2);
+  pscore.innerHTML = Math.floor(state.discards[player].length/2);
   let oscore = document.getElementById("opponentscore");
-  oscore.innerHTML = Math.floor(state.discards[1].length/2);
+  oscore.innerHTML = Math.floor(state.discards[1 - player].length/2);
 
   let plasttrick = document.getElementById("plasttrick");
-  let pdiscardlength = state.discards[0].length;
+  let pdiscardlength = state.discards[player].length;
   while (plasttrick.firstChild) {
     plasttrick.removeChild(plasttrick.firstChild);
   }
@@ -98,7 +124,7 @@ function updateState(state) {
   if (pdiscardlength >= 2) { 
     let show_last_trick = false;
     for (let i = 0; i < 2; i++) {
-      cardvalue = state.discards[0][pdiscardlength-2+i];
+      cardvalue = state.discards[player][pdiscardlength-2+i];
       if ((((cardvalue[0] == card_played[0]) && (cardvalue[1] == card_played[1])) || ((cardvalue[0] == prev_card_played[0]) && (cardvalue[1] == prev_card_played[1])))) {
         show_last_trick = true;
       }
@@ -106,7 +132,7 @@ function updateState(state) {
     if (show_last_trick) {
       for (let i = 0; i < 2; i++) {
         let card = document.createElement("div");
-        cardvalue = state.discards[0][pdiscardlength-2+i];
+        cardvalue = state.discards[player][pdiscardlength-2+i];
         card.innerHTML = cardHTML(cardvalue);
         card.className = "playingcard";
         card.classList.add(suitHTML[cardvalue[1]][1]);
@@ -119,14 +145,14 @@ function updateState(state) {
   }
 
   let olasttrick = document.getElementById("olasttrick");
-  let odiscardlength = state.discards[1].length;
+  let odiscardlength = state.discards[1 - player].length;
   while (olasttrick.firstChild) {
     olasttrick.removeChild(olasttrick.firstChild);
   }
   if (odiscardlength >= 2) {
     let show_last_trick = false;
     for (let i = 0; i < 2; i++) {
-      cardvalue = state.discards[1][odiscardlength-2+i];
+      cardvalue = state.discards[1 - player][odiscardlength-2+i];
       if (((cardvalue[0] == card_played[0]) && (cardvalue[1] == card_played[1])) || ((cardvalue[0] == prev_card_played[0]) && (cardvalue[1] == prev_card_played[1]))) {
         show_last_trick = true;
       }
@@ -134,7 +160,7 @@ function updateState(state) {
     if (show_last_trick) {
       for (let i = 0; i < 2; i++) {
         let card = document.createElement("div");
-        cardvalue = state.discards[1][odiscardlength-2+i];
+        cardvalue = state.discards[1 - player][odiscardlength-2+i];
         card.innerHTML = cardHTML(cardvalue);
         card.className = "playingcard";
         card.classList.add(suitHTML[cardvalue[1]][1]);
@@ -150,7 +176,7 @@ function updateState(state) {
   while (playerhand.firstChild) {
     playerhand.removeChild(playerhand.firstChild);
   }
-  let hand = state.hands[0].sort((a, b) => {
+  let hand = state.hands[player].sort((a, b) => {
 		if (a[1] > b[1]) {
 			return -1;
 		} else if (a[1] < b[1]) {
@@ -178,48 +204,62 @@ function updateState(state) {
     }
     card.id = hand[i][0] + hand[i][1];
     playerhand.appendChild(card);
-    card.addEventListener("click", event => {
-      let card_id = event.target.id;
-      fetch(`/play`, {
-        method: "POST",
-        credentials: "include",
-        body: JSON.stringify({id: game_id, play: card_id, player: 0}),
-        cache: "no-cache",
-        headers: new Headers({
-          "content-type": "application/json"
-        })
-      }).then((response) => {
-        if (response.status !== 200) {
-          console.log(`Looks like there was a problem. Status code: ${response.status}`);
-          return;
-        }
-        response.json().then((res) => {
-          updateState(res);
+    if (state.current_player == player) {
+      card.addEventListener("click", event => {
+        let card_id = event.target.id;
+        fetch(`/play`, {
+          method: "POST",
+          credentials: "include",
+          body: JSON.stringify({id: game_id, play: card_id, player: player}),
+          cache: "no-cache",
+          headers: new Headers({
+            "content-type": "application/json"
+          })
+        }).then((response) => {
+          if (response.status !== 200) {
+            console.log(`Looks like there was a problem. Status code: ${response.status}`);
+            return;
+          }
+          response.json().then((res) => {
+            console.log(res);
+            updateState(res);
+          });
         });
       });
-    });
+    }
   }
+
+  let playername = document.getElementById("playername");
+  let opponentname = document.getElementById("opponentname");
+  if (state.current_player == player) {
+    playername.classList.add("select")
+    opponentname.classList.remove("select")
+  } else {
+    playername.classList.remove("select")
+    opponentname.classList.add("select")
+  }
+
   prev_hand = hand;
-  if (state.current_player == 1) {
-    setTimeout(() => {fetch(`/play`, {
-        method: "POST",
-        credentials: "include",
-        body: JSON.stringify({id:game_id, play: null, player: 1}),
-        cache: "no-cache",
-        headers: new Headers({
-          "content-type": "application/json"
-        })
-      }).then((response) => {
-        if (response.status !== 200) {
-          console.log(`Looks like there was a problem. Status code: ${response.status}`);
-          return;
-        }
-        response.json().then((res) => {
-          updateState(res);
-        });
-      });
-    }, 1000);
-  }
+  // if (state.current_player == 1) {
+  //   setTimeout(() => {fetch(`/play`, {
+  //       method: "POST",
+  //       credentials: "include",
+  //       body: JSON.stringify({id:game_id, play: null, player: 1}),
+  //       cache: "no-cache",
+  //       headers: new Headers({
+  //         "content-type": "application/json"
+  //       })
+  //     }).then((response) => {
+  //       if (response.status !== 200) {
+  //         console.log(`Looks like there was a problem. Status code: ${response.status}`);
+  //         return;
+  //       }
+  //       response.json().then((res) => {
+  //         updateState(res);
+  //       });
+  //     });
+  //   }, 1000);
+  // }
 }
 
 const suitHTML = {'h': ['&hearts;', 'red'],

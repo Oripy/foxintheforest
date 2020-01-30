@@ -1,30 +1,45 @@
-from flask import flash, render_template, url_for, request, jsonify, make_response, redirect
+from flask import flash, render_template, url_for, request, json, jsonify, make_response, redirect
 from foxy import app, db, bcrypt
 from foxy.forms import RegistrationForm, LoginForm
 from foxy.models import User, Games
 from flask_login import login_user, logout_user, current_user, login_required
-from uuid import uuid4
 import foxy.foxintheforest as foxintheforest
 import random
-
-games = {}
-
-def get_new_id():
-    while True:
-        new_id = uuid4()
-        if not new_id in games: break
-    return str(new_id)
 
 @app.route("/")
 @app.route("/home")
 def main():
     return render_template('home.html')
 
-@app.route("/new", methods=["POST"])
+@app.route("/new")
+@login_required
 def new():
-    req = request.get_json()
-    id = get_new_id()
-    games[id] = foxintheforest.new_game(id)
+    game = foxintheforest.new_game()
+    state = json.dumps(game)
+    game_db = Games(state=state, first_player_id=current_user.id)
+    db.session.add(game_db)
+    db.session.commit()
+    return redirect(url_for('game', id=game_db.id))
+
+@app.route("/game")
+@login_required
+def game():
+    id = request.args.get("id")
+    game = Games.query.filter_by(id=id).first()
+    if game == None:
+        flash(f'This game does not exists.', 'danger')
+        return redirect(url_for('lobby'))
+    if game.first_player_id == current_user.id:
+        return render_template('game.html', id=id, opponent=game.second_player.username if game.second_player != None else None)
+    elif game.second_player_id == current_user.id:
+        return render_template('game.html', id=id, opponent=game.first_player.username)
+    elif game.second_player_id == None:
+        game.second_player_id = current_user.id
+        db.session.commit()
+        return render_template('game.html', id=id, opponent=game.first_player.username)
+    else:
+        flash(f'You are not a player in this game.', 'danger')
+        return redirect(url_for('lobby'))
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -64,24 +79,51 @@ def logout():
 @app.route("/lobby")
 @login_required
 def lobby():
-    return render_template('lobby.html', games=games)
+    open_games = Games.query.filter(((Games.first_player_id==None)|(Games.second_player_id==None)))
+    own_games = Games.query.filter(((Games.first_player_id==current_user.id)|(Games.second_player_id==current_user.id)))
+    return render_template('lobby.html', open_games=open_games, own_games=own_games)
 
 @app.route("/play", methods=["POST"])
 @login_required
 def play():
     req = request.get_json()
     card_played = None
-    if req["play"] == "new_game":
-        id = get_new_id()
-        games[id] = foxintheforest.new_game(id)
-    elif req["player"] == 1:
-        id = req["id"]
-        card_played = random.choice(foxintheforest.list_allowed(games[id], 1))
-        games[id] = foxintheforest.play(games[id], (1, card_played))
-    elif req["play"][-1] in ["h", "s", "c"] and int(req["play"][:-1]):
-        id = req["id"]
-        card_played = foxintheforest.decode_card(req["play"])
-        print(card_played)
-        games[id] = foxintheforest.play(games[id], (0, card_played))
-    res = make_response(jsonify(games[id]), 200)
-    return res
+    game_id = req["id"]
+    player = req["player"]
+    game = Games.query.filter_by(id=game_id).first()
+    if game == None:
+        flash(f'This game does not exists.', 'danger')
+        return redirect(url_for('lobby'))
+    if (game.first_player_id == current_user.id or game.second_player_id == current_user.id) \
+        and (game.second_player_id != None):
+        state = json.loads(game.state)
+        if (game.first_player_id == current_user.id and state["current_player"] == 0) \
+           or (game.second_player_id == current_user.id and state["current_player"] == 1):
+            if req["play"][-1] in ["h", "s", "c"] and int(req["play"][:-1]):
+                card_played = foxintheforest.decode_card(req["play"])
+                state = foxintheforest.play(state, (player, card_played))
+                game.state = json.dumps(state)
+                db.session.commit()
+        return make_response(jsonify(foxintheforest.get_player_state(state, player)), 200)
+    else:
+        flash(f'You are not a player in this game.', 'danger')
+        return redirect(url_for('lobby'))
+
+@app.route("/state", methods=["POST"])
+@login_required
+def state():
+    req = request.get_json()
+    game_id = req["id"]
+    game = Games.query.filter_by(id=game_id).first()
+    if game == None:
+        flash(f'This game does not exists.', 'danger')
+        return redirect(url_for('lobby'))
+    if game.first_player_id == current_user.id:
+        state = json.loads(game.state)
+        return make_response(jsonify(foxintheforest.get_player_state(state, 0)), 200)
+    elif game.second_player_id == current_user.id:
+        state = json.loads(game.state)
+        return make_response(jsonify(foxintheforest.get_player_state(state, 1)), 200)
+    else:
+        flash(f'You are not a player in this game.', 'danger')
+        return redirect(url_for('lobby'))

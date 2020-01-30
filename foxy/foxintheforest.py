@@ -1,6 +1,6 @@
 import random
 from copy import copy, deepcopy
-CARDS = [(a, b) for b in ["h", "s", "c"] for a in range(1, 12)]
+CARDS = [[a, b] for b in ["h", "s", "c"] for a in range(1, 12)]
 
 def other_player(player):
     return 1 - player
@@ -10,25 +10,25 @@ def pick_cards(deck, num):
     del deck[:num]
     return cards
 
-def new_game(id=None):
+def new_game():
     draw_deck = copy(CARDS)
     random.shuffle(draw_deck)
     hands = []
     for p in range(2):
         hands.append(pick_cards(draw_deck, 13))
-    trump_card = pick_cards(draw_deck, 1)[0]  
+    trump_card = pick_cards(draw_deck, 1)[0]
+    first_player = random.randint(0, 1)
     state = {
-        "id": id,
         "plays": [],
-        "leading_player": 0,
-        "current_player": 0,
+        "leading_player": first_player,
+        "current_player": first_player,
         "draw_deck": draw_deck,
         "trump_card": trump_card,
-        "trick": {0: None, 1: None},
-        "hands": {0: hands[0], 1: hands[1]},
-        "discards": {0: [], 1: []},
-        "private_discards": {0: [], 1: []},
-        "score": {0: 0, 1: 0}
+        "trick": [None, None],
+        "hands": hands,
+        "discards": [[], []],
+        "private_discards": [[], []],
+        "score": [0, 0]
     }    
     return state
 
@@ -70,11 +70,12 @@ def apply_play(state, step):
             winner, leading_player = trick_winner(state["leading_player"], state["trick"], state["trump_card"])
             state["discards"][winner].append(state["trick"][winner])
             state["discards"][winner].append(state["trick"][other_player(winner)])
-            state["trick"] = {0: None, 1: None}
+            state["trick"] = [None, None]
             state["leading_player"] = leading_player
             state["current_player"] = leading_player
     if len(state["hands"][0]) == 0 and len(state["hands"][1]) == 0:
         state["score"] = score(state)
+    print(state)
     return state
 
 def trick_winner(leading_player, trick, trump_card):
@@ -126,7 +127,7 @@ def trick_winner(leading_player, trick, trump_card):
 def valid_step(state, step):
     player = step[0]
     card = step[1]
-    # print(card, player, current_state)
+    # print(card, player, state)
     # print(f"testing {card}")
     if card in state["hands"][player]:
         # print("card in hand")
@@ -176,7 +177,7 @@ def valid_step(state, step):
                 return False
 
 def score(state):
-    score = {0: 0, 1: 0}
+    score = [0, 0]
     for p in range(2):
         for c in state["discards"][p]:
             if c[0] == 7:
@@ -202,7 +203,7 @@ def score(state):
 
 def decode_card(input):
     try:
-        return (int(input[:-1]), input[-1])
+        return [int(input[:-1]), input[-1]]
     except ValueError:
         return False
 
@@ -254,6 +255,22 @@ def list_allowed(state, player):
             return allowed
     else:
         return []
+
+def get_player_state(state, player):
+    return {
+        "plays": state["plays"],
+        "player": player,
+        "leading_player": state["leading_player"],
+        "current_player": state["current_player"],
+        "trump_card": state["trump_card"],
+        "trick": state["trick"],
+        "hands": [state["hands"][0] if player == 0 else len(state["hands"][0]),
+                  state["hands"][1] if player == 1 else len(state["hands"][1])],
+        "discards": state["discards"],
+        "private_discards": [state["private_discards"][0] if player == 0 else len(state["private_discards"][0]),
+                             state["private_discards"][1] if player == 1 else len(state["private_discards"][1])],
+        "score": state["score"]
+    }
 
 if __name__ ==  '__main__':
     state = new_game()

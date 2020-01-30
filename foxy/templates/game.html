@@ -12,7 +12,15 @@
     </div>
     <div id="opponenthand" title="Opponent hand"></div>
     <div id="playerhand" title="Your hand"></div>
-    <div><div id="opponentscore" title="Opponent number of tricks won">0</div><div id="olasttrick" class="preview hidden"></div></div>
-    <div><div id="playerscore" title="Your number of tricks won">0</div><div id="plasttrick" class="preview hidden"></div></div>
+    <div class="gameinfo">
+        <div id="opponentname">{{ opponent }}</div>
+        <div id="opponentscore" title="Opponent number of tricks won">0</div>
+        <div id="olasttrick" class="preview hidden"></div></div class="nameinfo">
+    <div class="gameinfo">
+        <div id="plasttrick" class="preview hidden"></div>
+        <div id="playerscore" title="Your number of tricks won">0</div>
+        <div id="playername">{{ current_user.username }}</div>
+    </div>
 </div>
+<script defer type="text/javascript" src="{{ url_for('static', filename='script.js') }}"></script>
 {% endblock content %}

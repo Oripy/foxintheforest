@@ -21,6 +21,7 @@ class Games(db.Model):
     second_player_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     first_player = db.relationship("User", foreign_keys=[first_player_id])
     second_player = db.relationship("User", foreign_keys=[second_player_id])
+    status = db.Column(db.Integer, nullable=False, default=0)
 
     state = db.Column(db.String(1000))
 

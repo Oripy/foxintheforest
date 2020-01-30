@@ -75,7 +75,6 @@ def apply_play(state, step):
             state["current_player"] = leading_player
     if len(state["hands"][0]) == 0 and len(state["hands"][1]) == 0:
         state["score"] = score(state)
-    print(state)
     return state
 
 def trick_winner(leading_player, trick, trump_card):

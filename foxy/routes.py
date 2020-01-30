@@ -35,6 +35,7 @@ def game():
         return render_template('game.html', id=id, opponent=game.first_player.username)
     elif game.second_player_id == None:
         game.second_player_id = current_user.id
+        game.status = 1
         db.session.commit()
         return render_template('game.html', id=id, opponent=game.first_player.username)
     else:
@@ -95,7 +96,7 @@ def play():
         flash(f'This game does not exists.', 'danger')
         return redirect(url_for('lobby'))
     if (game.first_player_id == current_user.id or game.second_player_id == current_user.id) \
-        and (game.second_player_id != None):
+        and (game.second_player_id != None) and (game.status == 1):
         state = json.loads(game.state)
         if (game.first_player_id == current_user.id and state["current_player"] == 0) \
            or (game.second_player_id == current_user.id and state["current_player"] == 1):

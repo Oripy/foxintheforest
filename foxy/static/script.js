@@ -4,27 +4,6 @@ let game_id = urlParams.get('id');
 let prev_hand = [];
 setTimeout(refresh, 1000);
 
-// document.getElementById("new").addEventListener("click", event => {
-//   fetch(`/play`, {
-//     method: "POST",
-//     credentials: "include",
-//     body: JSON.stringify({play: "new_game"}),
-//     cache: "no-cache",
-//     headers: new Headers({
-//       "content-type": "application/json"
-//     })
-//   }).then((response) => {
-//     if (response.status !== 200) {
-//       console.log(`Looks like there was a problem. Status code: ${response.status}`);
-//       return;
-//     }
-//     response.json().then((res) => {
-//       game_id = res.id;
-//       updateState(res);
-//     });
-//   });
-// });
-
 function refresh() {
   fetch(`/state`, {
     method: "POST",
@@ -47,7 +26,6 @@ function refresh() {
 }
 
 function updateState(state) {
-  console.log(state);
   player = parseInt(state.player)
   if (state.plays.length > 0) {
     card_played = state.plays[state.plays.length-1][1];
@@ -221,7 +199,6 @@ function updateState(state) {
             return;
           }
           response.json().then((res) => {
-            console.log(res);
             updateState(res);
           });
         });
@@ -240,26 +217,6 @@ function updateState(state) {
   }
 
   prev_hand = hand;
-  // if (state.current_player == 1) {
-  //   setTimeout(() => {fetch(`/play`, {
-  //       method: "POST",
-  //       credentials: "include",
-  //       body: JSON.stringify({id:game_id, play: null, player: 1}),
-  //       cache: "no-cache",
-  //       headers: new Headers({
-  //         "content-type": "application/json"
-  //       })
-  //     }).then((response) => {
-  //       if (response.status !== 200) {
-  //         console.log(`Looks like there was a problem. Status code: ${response.status}`);
-  //         return;
-  //       }
-  //       response.json().then((res) => {
-  //         updateState(res);
-  //       });
-  //     });
-  //   }, 1000);
-  // }
 }
 
 const suitHTML = {'h': ['&hearts;', 'red'],

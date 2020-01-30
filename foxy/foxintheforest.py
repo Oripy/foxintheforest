@@ -286,4 +286,4 @@ if __name__ ==  '__main__':
 
     print("Résultat :")
     print("Plis gagnés : P0 {}, P1 {}".format(len(state["discards"][0])//2, len(state["discards"][1])//2))
-    print("Score : P0 {}, P1 {}".format(*score(state).values()))
+    print("Score : P0 {}, P1 {}".format(*score(state)))

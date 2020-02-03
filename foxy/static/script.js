@@ -48,7 +48,7 @@ function updateState(state) {
     card.id = "oh"+i;
     opponenthand.appendChild(card);
   }
-  
+
   let trump = document.getElementById("trump");
   if (state.trump_card != null) {
     trump.innerHTML = cardHTML(state.trump_card);
@@ -98,8 +98,8 @@ function updateState(state) {
   while (plasttrick.firstChild) {
     plasttrick.removeChild(plasttrick.firstChild);
   }
-  
-  if (pdiscardlength >= 2) { 
+
+  if (pdiscardlength >= 2) {
     let show_last_trick = false;
     for (let i = 0; i < 2; i++) {
       cardvalue = state.discards[player][pdiscardlength-2+i];
@@ -182,6 +182,16 @@ function updateState(state) {
     }
     card.id = hand[i][0] + hand[i][1];
     playerhand.appendChild(card);
+    if ([1,3,5,7,9,11].includes(hand[i][0])) {
+        card.addEventListener("mouseover", event => {
+            helpdiv = document.getElementById("help"+hand[i][0]);
+            helpdiv.classList.remove("hidden");
+        });
+        card.addEventListener("mouseleave", event => {
+            helpdiv = document.getElementById("help"+hand[i][0]);
+            helpdiv.classList.add("hidden");
+        });
+    }
     if (state.current_player == player) {
       card.addEventListener("click", event => {
         let card_id = event.target.id;

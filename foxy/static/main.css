@@ -82,49 +82,55 @@ a.article-title:hover {
 #playingarea
 {
 	display: grid;
-	grid-template-columns: 20% auto;
+	grid-template-columns: 20% auto 20%;
 	grid-template-rows: 25% auto 25%;
 
   	grid-row-gap: 30px;
 
 	justify-items: center;
-	align-items: center;	
+	align-items: center;
 }
 
 #playerhand
 {
-	grid-column: 2 / 2;
-	grid-row: 3 / 3;
+	grid-column: 2 / 3;
+	grid-row: 3 / 4;
 }
 
 #opponenthand
 {
-	grid-column: 2 / 2;
-	grid-row: 1 / 1;
+	grid-column: 2 / 3;
+	grid-row: 1 / 2;
 }
 
 #deck
 {
-	grid-column: 1 / 1;
-	grid-row: 2 / 2;
+	grid-column: 1 / 2;
+	grid-row: 2 / 3;
 }
 
 #trick
 {
-	grid-column: 2 / 2;
-	grid-row: 2 / 2;
+	grid-column: 2 / 3;
+	grid-row: 2 / 3;
 }
 
 #playerscore
 {
-	grid-column: 1 / 1;
-	grid-row: 3 / 3;
+	grid-column: 1 / 2;
+	grid-row: 3 / 4;
 }
 
 #opponentscore
 {
-	grid-column: 1 / 1;
-	grid-row: 1 / 1;
+	grid-column: 1 / 2;
+	grid-row: 1 / 2;
+}
+
+#help1
+{
+    grid-column: 3 / 4;
+	grid-row: 1 / 4;
 }
 
 .playingcard
@@ -138,7 +144,7 @@ a.article-title:hover {
 	border-radius: 10px;
 	font-size: 24pt;
 	text-align: center;
-	
+
 	font-weight: bold;
 	font-family: "Arial Black", Gadget, sans-serif;
 	line-height: 1.15;
@@ -182,32 +188,27 @@ a.article-title:hover {
 		#606dbc 10px,
 		#465298 10px,
 		#465298 20px
-	);	
+	);
 }
 
 .empty
 {
-	background: lightgrey;	
+	background: lightgrey;
 }
 
 .red
-{	
+{
 	color: red;
 }
 
 .green
-{	
+{
 	color: green;
 }
 
 .black
 {
 	color: black;
-}
-
-.hidden
-{
-	opacity: 1;
 }
 
 .preview
@@ -239,3 +240,24 @@ a.article-title:hover {
 	padding-left: 5px;
 	padding-right: 5px;
 }
+
+.help
+{
+    transform: scale(2.5);
+}
+
+.help > :first-child
+{
+    margin-bottom: 0;
+}
+
+.helptext
+{
+    font-size: 4.9px;
+}
+
+.hidden
+{
+    display: none;
+}
+

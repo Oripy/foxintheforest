@@ -93,12 +93,14 @@ a.article-title:hover {
 
 #playerhand
 {
+    text-align: center;
 	grid-column: 2 / 3;
 	grid-row: 3 / 4;
 }
 
 #opponenthand
 {
+    text-align: center;
 	grid-column: 2 / 3;
 	grid-row: 1 / 2;
 }
@@ -113,24 +115,6 @@ a.article-title:hover {
 {
 	grid-column: 2 / 3;
 	grid-row: 2 / 3;
-}
-
-#playerscore
-{
-	grid-column: 1 / 2;
-	grid-row: 3 / 4;
-}
-
-#opponentscore
-{
-	grid-column: 1 / 2;
-	grid-row: 1 / 2;
-}
-
-#help1
-{
-    grid-column: 3 / 4;
-	grid-row: 1 / 4;
 }
 
 .playingcard
@@ -231,6 +215,7 @@ a.article-title:hover {
 .gameinfo
 {
 	text-align: center;
+	grid-column: 1 / 2;
 }
 
 .select
@@ -244,6 +229,8 @@ a.article-title:hover {
 .help
 {
     transform: scale(2.5);
+    grid-column: 3 / 4;
+	grid-row: 1 / 4;
 }
 
 .help > :first-child

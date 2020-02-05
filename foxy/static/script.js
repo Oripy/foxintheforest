@@ -2,6 +2,7 @@ const urlParams = new URLSearchParams(window.location.search);
 
 let game_id = urlParams.get('id');
 let prev_hand = [];
+let current_play_number = -1;
 setTimeout(refresh, 1000);
 
 function refresh() {
@@ -26,6 +27,14 @@ function refresh() {
 }
 
 function updateState(state) {
+  if (state.plays.length == current_play_number) {
+    return false
+  }
+  for (let  i= 1; i < 12; i+=2) {
+    helpdiv = document.getElementById("help"+i);
+    helpdiv.classList.add("hidden");
+  }
+  current_play_number = state.plays.length;
   player = parseInt(state.player)
   if (state.plays.length > 0) {
     card_played = state.plays[state.plays.length-1][1];
@@ -182,36 +191,47 @@ function updateState(state) {
     }
     card.id = hand[i][0] + hand[i][1];
     playerhand.appendChild(card);
-    if ([1,3,5,7,9,11].includes(hand[i][0])) {
+    if (window.matchMedia("(hover: hover)").matches) {
+      if ([1,3,5,7,9,11].includes(hand[i][0])) {
         card.addEventListener("mouseover", event => {
-            helpdiv = document.getElementById("help"+hand[i][0]);
-            helpdiv.classList.remove("hidden");
+          helpdiv = document.getElementById("help"+hand[i][0]);
+          helpdiv.classList.remove("hidden");
         });
         card.addEventListener("mouseleave", event => {
-            helpdiv = document.getElementById("help"+hand[i][0]);
-            helpdiv.classList.add("hidden");
+          helpdiv = document.getElementById("help"+hand[i][0]);
+          helpdiv.classList.add("hidden");
         });
+      }
     }
     if (state.current_player == player) {
-      card.addEventListener("click", event => {
-        let card_id = event.target.id;
-        fetch(`/play`, {
-          method: "POST",
-          credentials: "include",
-          body: JSON.stringify({id: game_id, play: card_id, player: player}),
-          cache: "no-cache",
-          headers: new Headers({
-            "content-type": "application/json"
-          })
-        }).then((response) => {
-          if (response.status !== 200) {
-            console.log(`Looks like there was a problem. Status code: ${response.status}`);
-            return;
-          }
-          response.json().then((res) => {
-            updateState(res);
+      card.addEventListener("click", (event) => {
+        if ((window.matchMedia("(hover: hover)").matches) || (event.target.classList.contains("sel"))) {
+          let card_id = event.target.id;
+          fetch(`/play`, {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify({id: game_id, play: card_id, player: player}),
+            cache: "no-cache",
+            headers: new Headers({
+              "content-type": "application/json"
+            })
+          }).then((response) => {
+            if (response.status !== 200) {
+              console.log(`Looks like there was a problem. Status code: ${response.status}`);
+              return;
+            }
+            response.json().then((res) => {
+              updateState(res);
+            });
           });
-        });
+        }
+        if (window.matchMedia("(hover: none)").matches) {
+          if ([1,3,5,7,9,11].includes(hand[i][0])) {
+            helpdiv = document.getElementById("help"+hand[i][0]);
+            helpdiv.classList.remove("hidden");
+          }
+          event.target.classList.toggle("sel");
+        }
       });
     }
   }
@@ -239,4 +259,20 @@ function cardHTML(card) {
   } else {
     return card[0]+"<br />"+suitHTML[card[1]][0];
   }
+}
+
+if (window.matchMedia("(hover: none)").matches) {
+  document.addEventListener("click", (event) => {
+    let selected_cards = document.getElementsByClassName("sel");
+    for (let i = 0; i < selected_cards.length; i++) {
+      if (! selected_cards[i].contains(event.target)) {
+        let value = parseInt(selected_cards[i].id.slice(0, -1));
+        if ([1,3,5,7,9,11].includes(value)) {
+          helpdiv = document.getElementById("help"+value);
+          helpdiv.classList.add("hidden");
+        }
+        selected_cards[i].classList.remove("sel");
+      }
+    }
+  });
 }

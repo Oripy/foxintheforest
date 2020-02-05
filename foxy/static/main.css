@@ -82,10 +82,13 @@ a.article-title:hover {
 #playingarea
 {
 	display: grid;
-	grid-template-columns: 20% auto 20%;
-	grid-template-rows: 25% auto 25%;
-
-  	grid-row-gap: 30px;
+	grid-template-columns: 10% 1fr 10%;
+	grid-template-rows: 25% 1fr 25%;
+    grid-template-areas:
+    "opponentinfo opponenthand ."
+    "deck trick help"
+    "playerinfo playerhand .";
+  	grid-row-gap: 2%;
 
 	justify-items: center;
 	align-items: center;
@@ -94,27 +97,33 @@ a.article-title:hover {
 #playerhand
 {
     text-align: center;
-	grid-column: 2 / 3;
-	grid-row: 3 / 4;
+	grid-area: playerhand;
 }
 
 #opponenthand
 {
     text-align: center;
-	grid-column: 2 / 3;
-	grid-row: 1 / 2;
+	grid-area: opponenthand;
 }
 
 #deck
 {
-	grid-column: 1 / 2;
-	grid-row: 2 / 3;
+	grid-area: deck;
 }
 
 #trick
 {
-	grid-column: 2 / 3;
-	grid-row: 2 / 3;
+	grid-area: trick;
+}
+
+.gameinfo.opponent
+{
+	grid-area: opponentinfo;
+}
+
+.gameinfo.player
+{
+	grid-area: playerinfo;
 }
 
 .playingcard
@@ -145,18 +154,27 @@ a.article-title:hover {
 	margin: -8px;
 }
 
-.playingcard.selectable:hover
+@media (hover: hover) {
+    .playingcard.selectable:hover
+    {
+    	background-color: lightcyan;
+    	/* transform-origin: bottom center; */
+    	transform: scale(1.5)
+    }
+
+    .playingcard.selectable:active
+    {
+    	background-color: coral;
+    	/* transform-origin: bottom center; */
+    	transform: scale(1.6)
+    }
+}
+
+.playingcard.selectable.sel
 {
 	background-color: lightcyan;
 	/* transform-origin: bottom center; */
 	transform: scale(1.5)
-}
-
-.playingcard.selectable:active
-{
-	background-color: coral;
-	/* transform-origin: bottom center; */
-	transform: scale(1.6)
 }
 
 .playingcard.highlight
@@ -215,7 +233,6 @@ a.article-title:hover {
 .gameinfo
 {
 	text-align: center;
-	grid-column: 1 / 2;
 }
 
 .select
@@ -229,8 +246,7 @@ a.article-title:hover {
 .help
 {
     transform: scale(2.5);
-    grid-column: 3 / 4;
-	grid-row: 1 / 4;
+    grid-area: help;
 }
 
 .help > :first-child

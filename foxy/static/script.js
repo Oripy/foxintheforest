@@ -236,6 +236,43 @@ function updateState(state) {
     }
   }
 
+  let space = 0
+  let history = document.getElementById("history");
+  while (history.firstChild) {
+    history.removeChild(history.firstChild);
+  }
+  for (let i = 0; i < state.plays.length; i++) {
+    let card = document.createElement("div");
+    if (state.plays[i][0] == player) {
+        card.classList.add("player");
+    } else {
+        card.classList.add("opponent");
+    }
+    if (state.plays[i][1][0]) {
+        card.innerHTML = cardHTML(state.plays[i][1]);
+        card.classList.add(suitHTML[state.plays[i][1][1]][1]);
+    } else {
+        card.innerHTML = cardHTML("empty");
+        card.classList.add("back");
+    }
+    if (i != 0) {
+        if ((state.plays[i-1][1][0] == 3) || (state.plays[i-1][1][0] == 5)) {
+            card.classList.add("special");
+            space -= 1;
+        }
+    }
+    if (space == 2) {
+        s = document.createElement("div");
+        s.classList.add("spacer");
+        s.innerHTML = "&nbsp;"
+        history.appendChild(s);
+        space = 0;
+    }
+    card.classList.add("playingcard");
+    history.appendChild(card);
+    space++;
+  }
+
   let playername = document.getElementById("playername");
   let opponentname = document.getElementById("opponentname");
   if (state.current_player == player) {

@@ -82,12 +82,13 @@ a.article-title:hover {
 #playingarea
 {
 	display: grid;
-	grid-template-columns: 10% 1fr 10%;
-	grid-template-rows: 25% 1fr 25%;
+	grid-template-columns: 1fr 4fr 1fr;
+	grid-template-rows: 1fr 2fr 1fr 1fr;
     grid-template-areas:
     "opponentinfo opponenthand ."
     "deck trick help"
-    "playerinfo playerhand .";
+    "playerinfo playerhand ."
+    "history history history";
   	grid-row-gap: 2%;
 
 	justify-items: center;
@@ -114,6 +115,39 @@ a.article-title:hover {
 #trick
 {
 	grid-area: trick;
+}
+
+@media (hover: none) {
+    #history
+    {
+        display: none;
+    }
+}
+
+@media (hover: hover) {
+    #history
+    {
+        grid-area: history;
+        justify-self: end;
+    }
+}
+
+#history .opponent
+{
+    transform: translate(0px, -20px) scale(0.5);
+    margin: -20px;
+}
+
+#history .player
+{
+    transform: translate(0px, 20px) scale(0.5);
+    margin: -20px;
+}
+
+#history .special
+{
+    background-color: lightcyan;
+    transform: scale(0.4);
 }
 
 .gameinfo.opponent
@@ -211,6 +245,12 @@ a.article-title:hover {
 .black
 {
 	color: black;
+}
+
+.spacer
+{
+    margin: 5px;
+    display: inline;
 }
 
 .preview

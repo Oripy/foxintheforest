@@ -11,12 +11,12 @@ import random
 def main():
     return render_template('home.html')
 
-@app.route("/new")
+@app.route("/new", methods=['POST'])
 @login_required
 def new():
     game = foxintheforest.new_game()
     state = json.dumps(game)
-    game_db = Games(state=state, first_player_id=current_user.id)
+    game_db = Games(state=state, name=request.form['gamename'], first_player_id=current_user.id)
     db.session.add(game_db)
     db.session.commit()
     return redirect(url_for('game', id=game_db.id))
@@ -80,8 +80,8 @@ def logout():
 @app.route("/lobby")
 @login_required
 def lobby():
-    open_games = Games.query.filter(((Games.first_player_id==None)|(Games.second_player_id==None)))
-    own_games = Games.query.filter(((Games.first_player_id==current_user.id)|(Games.second_player_id==current_user.id)))
+    open_games = Games.query.filter((((Games.first_player_id==None)|(Games.second_player_id==None))&(Games.status<2)))
+    own_games = Games.query.filter((((Games.first_player_id==current_user.id)|(Games.second_player_id==current_user.id))&(Games.status<2)))
     return render_template('lobby.html', open_games=open_games, own_games=own_games)
 
 @app.route("/play", methods=["POST"])
@@ -102,7 +102,10 @@ def play():
            or (game.second_player_id == current_user.id and state["current_player"] == 1):
             if req["play"][-1] in ["h", "s", "c"] and int(req["play"][:-1]):
                 card_played = foxintheforest.decode_card(req["play"])
-                state = foxintheforest.play(state, (player, card_played))
+                state = foxintheforest.play(state, [player, card_played])
+                print(state["score"])
+                if len(state["discards"][0]) + len(state["discards"][1]) == 26:
+                    game.status = 2
                 game.state = json.dumps(state)
                 db.session.commit()
         return make_response(jsonify(foxintheforest.get_player_state(state, player)), 200)

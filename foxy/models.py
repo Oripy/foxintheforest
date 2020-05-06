@@ -16,6 +16,7 @@ class User(db.Model, UserMixin):
 
 class Games(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), nullable=False)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     first_player_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     second_player_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -26,4 +27,5 @@ class Games(db.Model):
     state = db.Column(db.String(1000))
 
     def __repr__(self):
-        return f"Games('{self.date_created}', '{self.first_player}', '{self.second_player}', )"
+        status = ["created", "started", "finished"][self.status]
+        return f"Games('{self.date_created}', '{self.first_player}', '{self.second_player}', {status})"

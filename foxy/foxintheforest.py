@@ -57,11 +57,15 @@ def apply_play(state, step):
 
         if card[0] == 5 and len(state["hands"][player]) != 0:
             action = True
-            state["hands"][player].append(pick_cards(state["draw_deck"], 1)[0])
+            card_draw = pick_cards(state["draw_deck"], 1)[0]
+            state["hands"][player].append(card_draw)
+            state["plays"][-1].append(card_draw)
             state["current_player"] = player
         elif card[0] == 3 and len(state["hands"][player]) != 0:
             action = True
-            state["hands"][player].append(state["trump_card"])
+            card_picked = state["trump_card"]
+            state["hands"][player].append(card_picked)
+            state["plays"][-1].append(card_picked)
             state["trump_card"] = None
             state["current_player"] = player
 
@@ -256,8 +260,18 @@ def list_allowed(state, player):
         return []
 
 def get_player_state(state, player):
+    clean_plays = []
+    change_next = False
+    for p in state["plays"]:
+        if change_next:
+            clean_plays.append([p[0], [None, None]])
+            change_next = False
+        else:
+            clean_plays.append(p)
+            if p[0] == other_player(player) and (p[1][0] == 3 or p[1][0] == 5):
+                change_next = True
     return {
-        "plays": state["plays"],
+        "plays": clean_plays,
         "player": player,
         "leading_player": state["leading_player"],
         "current_player": state["current_player"],
@@ -282,7 +296,7 @@ if __name__ ==  '__main__':
         else:
             card_played = random.choice(list_allowed(state, 1))
         # print("Carte : {}{}".format(*card_played))
-        play(state, (current_player, card_played))
+        play(state, [current_player, card_played])
 
     print("Résultat :")
     print("Plis gagnés : P0 {}, P1 {}".format(len(state["discards"][0])//2, len(state["discards"][1])//2))

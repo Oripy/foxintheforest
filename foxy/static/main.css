@@ -129,6 +129,7 @@ a.article-title:hover {
     {
         grid-area: history;
         justify-self: end;
+        filter: opacity(50%);
     }
 }
 

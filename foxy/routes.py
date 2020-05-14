@@ -4,6 +4,7 @@ from foxy.forms import RegistrationForm, LoginForm
 from foxy.models import User, Games
 from flask_login import login_user, logout_user, current_user, login_required
 import foxy.foxintheforest as foxintheforest
+import foxy.random_ai as random_ai
 import random
 
 @app.route("/")
@@ -16,7 +17,15 @@ def main():
 def new():
     game = foxintheforest.new_game()
     state = json.dumps(game)
-    game_db = Games(state=state, name=request.form['gamename'], first_player_id=current_user.id)
+    if request.form['IA']:
+        ia = User.query.filter_by(username=request.form['IA']).first()
+        if ia:
+            game_db = Games(state=state, name=request.form['gamename'], first_player_id=current_user.id, second_player_id=ia.id, status=1)
+        else:
+            flash(f'This IA does not exists.', 'danger')
+            return redirect(url_for('lobby'))
+    else:
+        game_db = Games(state=state, name=request.form['gamename'], first_player_id=current_user.id)
     db.session.add(game_db)
     db.session.commit()
     return redirect(url_for('game', id=game_db.id))
@@ -103,7 +112,6 @@ def play():
             if req["play"][-1] in ["h", "s", "c"] and int(req["play"][:-1]):
                 card_played = foxintheforest.decode_card(req["play"])
                 state = foxintheforest.play(state, [player, card_played])
-                print(state["score"])
                 if len(state["discards"][0]) + len(state["discards"][1]) == 26:
                     game.status = 2
                 game.state = json.dumps(state)
@@ -122,6 +130,14 @@ def state():
     if game == None:
         flash(f'This game does not exists.', 'danger')
         return redirect(url_for('lobby'))
+    if game.second_player.username == "TheBad":
+        state = json.loads(game.state)
+        if state["current_player"] == 1:
+            state = foxintheforest.play(state, random_ai.ia_play(state))
+            if len(state["discards"][0]) + len(state["discards"][1]) == 26:
+                game.status = 2
+            game.state = json.dumps(state)
+            db.session.commit()
     if game.first_player_id == current_user.id:
         state = json.loads(game.state)
         return make_response(jsonify(foxintheforest.get_player_state(state, 0)), 200)

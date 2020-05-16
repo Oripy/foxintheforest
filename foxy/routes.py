@@ -133,7 +133,7 @@ def state():
     if game.second_player.username == "TheBad":
         state = json.loads(game.state)
         if state["current_player"] == 1:
-            state = foxintheforest.play(state, random_ai.ia_play(state))
+            state = foxintheforest.play(state, [1, random_ai.ia_play(state)])
             if len(state["discards"][0]) + len(state["discards"][1]) == 26:
                 game.status = 2
             game.state = json.dumps(state)

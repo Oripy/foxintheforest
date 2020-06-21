@@ -17,7 +17,7 @@ def main():
 def new():
     game = foxintheforest.new_game()
     state = json.dumps(game)
-    if request.form['IA']:
+    if 'IA' in request.form:
         ia = User.query.filter_by(username=request.form['IA']).first()
         if ia:
             game_db = Games(state=state, name=request.form['gamename'], first_player_id=current_user.id, second_player_id=ia.id, status=1)
@@ -130,14 +130,15 @@ def state():
     if game == None:
         flash(f'This game does not exists.', 'danger')
         return redirect(url_for('lobby'))
-    if game.second_player.username == "TheBad":
-        state = json.loads(game.state)
-        if state["current_player"] == 1:
-            state = foxintheforest.play(state, [1, random_ai.ia_play(state)])
-            if len(state["discards"][0]) + len(state["discards"][1]) == 26:
-                game.status = 2
-            game.state = json.dumps(state)
-            db.session.commit()
+    if game.second_player:
+        if game.second_player.username == "TheBad":
+            state = json.loads(game.state)
+            if state["current_player"] == 1:
+                state = foxintheforest.play(state, [1, random_ai.ia_play(state)])
+                if len(state["discards"][0]) + len(state["discards"][1]) == 26:
+                    game.status = 2
+                game.state = json.dumps(state)
+                db.session.commit()
     if game.first_player_id == current_user.id:
         state = json.loads(game.state)
         return make_response(jsonify(foxintheforest.get_player_state(state, 0)), 200)

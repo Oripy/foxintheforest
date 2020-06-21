@@ -225,9 +225,9 @@ def show(state, player):
 def list_allowed(state, player):
     if state["current_player"] == player:
         if state["trick"][player] != None:
-            return state["hands"][player]
+            return [[player, card] for card in state["hands"][player]]
         elif state["trick"][0] == None and state["trick"][1] == None:
-            return state["hands"][player]
+            return [[player, card] for card in state["hands"][player]]
         else:
             allowed = []
             other_card = state["trick"][other_player(player)]
@@ -243,18 +243,18 @@ def list_allowed(state, player):
                     if other_card[0] == 11: # Force best card or 1
                         if card[0] == 1:
                             # print("OK, 11 forced 1 or best")
-                            allowed.append(card)
+                            allowed.append([player, card])
                         else:
                             if card == same_suit_list[-1]:
                                 # print("OK, 11 forced 1 or best")
-                                allowed.append(card)
+                                allowed.append([player, card])
                     else:
                         # print("OK, same suit and nothing forcing")
-                        allowed.append(card)
+                        allowed.append([player, card])
                 else: # Different suit
                     if len(same_suit_list) == 0:
                         # print("OK, no card on the same suit available")
-                        allowed.append(card)
+                        allowed.append([player, card])
             return allowed
     else:
         return []
@@ -292,11 +292,11 @@ if __name__ ==  '__main__':
         show(state, current_player)
         if current_player == 0:
             # card_played = decode_card(input("Carte ? "))
-            card_played = random.choice(list_allowed(state, 0))
+            selected_play = random.choice(list_allowed(state, 0))
         else:
-            card_played = random.choice(list_allowed(state, 1))
-        # print("Carte : {}{}".format(*card_played))
-        play(state, [current_player, card_played])
+            selected_play = random.choice(list_allowed(state, 1))
+        # print("Carte : {}{}".format(*selected_play[1]))
+        play(state, selected_play)
 
     print("Résultat :")
     print("Plis gagnés : P0 {}, P1 {}".format(len(state["discards"][0])//2, len(state["discards"][1])//2))

@@ -269,7 +269,7 @@ def get_player_state(state, player):
             change_next = False
         else:
             clean_plays.append(p)
-            if p[0] == other_player(player) and (p[1][0] == 3 or p[1][0] == 5):
+            if p[0] == other_player(player) and p[1][0] == 5:
                 change_next = True
     return {
         "plays": clean_plays,

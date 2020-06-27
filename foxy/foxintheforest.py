@@ -1,6 +1,7 @@
 import random
 from copy import copy, deepcopy
-CARDS = [[a, b] for b in ["h", "s", "c"] for a in range(1, 12)]
+COLORS = ["h", "s", "c"]
+CARDS = [[a, b] for b in COLORS for a in range(1, 12)]
 
 def other_player(player):
     return 1 - player

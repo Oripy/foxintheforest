@@ -132,7 +132,7 @@ def valid_step(state, step):
     player = step[0]
     card = step[1]
     # print(card, player, state)
-    # print(f"testing {card}")
+    print(f"testing {card}", state["hands"][player])
     if card in state["hands"][player]:
         # print("OK, card in hand")
         if state["trick"][player] == None:
@@ -266,14 +266,21 @@ def list_allowed(state, player):
 def get_player_state(state, player):
     clean_plays = []
     change_next = False
+    skip_next_check = False
     for p in state["plays"]:
         if change_next:
             clean_plays.append([p[0], [None, None]])
             change_next = False
         else:
-            clean_plays.append(p)
-            if p[0] == other_player(player) and p[1][0] == 5:
+            if p[0] == other_player(player) and p[1][0] == 5 and not skip_next_check:
+                clean_plays.append([p[0], p[1]])
                 change_next = True
+            else:
+                clean_plays.append(p)
+        if (p[1][0] == 3 or p[1][0] == 5) and not change_next and not skip_next_check:
+            skip_next_check = True
+        else:
+            skip_next_check = False
     return {
         "plays": clean_plays,
         "player": player,

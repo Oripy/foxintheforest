@@ -134,7 +134,7 @@ def valid_step(state, step):
     # print(card, player, state)
     # print(f"testing {card}")
     if card in state["hands"][player]:
-        # print("card in hand")
+        # print("OK, card in hand")
         if state["trick"][player] == None:
             # print("OK, no card already played for this player")
             other_card = state["trick"][other_player(player)]
@@ -179,6 +179,9 @@ def valid_step(state, step):
                 return True
             else:
                 return False
+    else:
+        print("NOK, card not in hand")
+        return False
 
 def score(state):
     score = [0, 0]

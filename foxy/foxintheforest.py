@@ -132,7 +132,7 @@ def valid_step(state, step):
     player = step[0]
     card = step[1]
     # print(card, player, state)
-    print(f"testing {card}", state["hands"][player])
+    # print(f"testing {card}")
     if card in state["hands"][player]:
         # print("OK, card in hand")
         if state["trick"][player] == None:

@@ -7,6 +7,8 @@ import foxy.foxintheforest as foxintheforest
 import foxy.random_ai as random_ai
 import random
 
+AI_dict = {"TheBad": random_ai} 
+
 @app.route("/")
 @app.route("/home")
 def main():
@@ -131,10 +133,11 @@ def state():
         flash(f'This game does not exists.', 'danger')
         return redirect(url_for('lobby'))
     if game.second_player:
-        if game.second_player.username == "TheBad":
+        if game.second_player.username in AI_dict.keys():
             state = json.loads(game.state)
             if state["current_player"] == 1:
-                state = foxintheforest.play(state, [1, random_ai.ia_play(state)])
+                ai_play = AI_dict[game.second_player.username].ia_play(foxintheforest.get_player_state(state, 1))
+                state = foxintheforest.play(state, ai_play)
                 if len(state["discards"][0]) + len(state["discards"][1]) == 26:
                     game.status = 2
                 game.state = json.dumps(state)

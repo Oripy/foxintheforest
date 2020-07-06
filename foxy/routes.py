@@ -5,9 +5,10 @@ from foxy.models import User, Games
 from flask_login import login_user, logout_user, current_user, login_required
 import foxy.foxintheforest as foxintheforest
 import foxy.random_ai as random_ai
+import foxy.good_ai as good_ai
 import random
 
-AI_dict = {"TheBad": random_ai} 
+AI_dict = {"TheBad": random_ai, "TheGood": good_ai} 
 
 @app.route("/")
 @app.route("/home")

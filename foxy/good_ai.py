@@ -121,6 +121,12 @@ def aquire_knowledge(state):
               opponent_cuts.append(suit)
             if suit in opponent_max_one:
               opponent_max_one.remove(suit)
+          elif trick[0][1][0] == 11:
+            if (trick[1][1][0] != 1) and (trick[1][1][0] != 10):
+              for num in range(10, trick[1][1][0], -1):
+                if [num, suit] in remaining_cards:
+                  draw_deck.append([num, suit])
+                  remaining_cards.remove([num, suit])
       if p[1][0] == 5:
         if p[0] == other_player(state["player"]):
           for cut in opponent_cuts:
@@ -130,11 +136,17 @@ def aquire_knowledge(state):
               opponent_max_one.remove(cut)
           opponent_cuts = []
           opponent_hand = []
+          remaining_cards += draw_deck
+          draw_deck = []
+        else:
+          if p[1] in draw_deck:
+            draw_deck.remove(p[1])
         next_special = True
       if p[1][0] == 3:
         if p[0] == other_player(state["player"]):
           opponent_hand.append(p[2])
         next_special = True
+  remaining_cards = [c for c in remaining_cards if c not in draw_deck]
   for cut in opponent_cuts:
     draw_deck += [c for c in remaining_cards if c[1] == cut]
     remaining_cards = [c for c in remaining_cards if c[1] != cut]

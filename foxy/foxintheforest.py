@@ -33,6 +33,34 @@ def new_game():
     }    
     return state
 
+def copy_game(state):
+    """ output a cloned copy of the given game """
+    plays = []
+    for p in state["plays"]:
+        if len(p) == 2:
+            plays.append([p[0], p[1]])
+        else:
+            plays.append([p[0], p[1], p[2]])
+    draw_deck = []
+    for c in state["draw_deck"]:
+        draw_deck.append(c)
+    hands = [state["hands"][0].copy(), state["hands"][1].copy()]
+    discards = [state["discards"][0].copy(), state["discards"][1].copy()]
+    private_discards  = [state["private_discards"][0].copy(), state["private_discards"][1].copy()]
+
+    return {
+        "plays": plays,
+        "leading_player": state["leading_player"],
+        "current_player": state["current_player"],
+        "draw_deck": draw_deck,
+        "trump_card": state["trump_card"],
+        "trick": [state["trick"][0], state["trick"][1]],
+        "hands": hands,
+        "discards": discards,
+        "private_discards": private_discards,
+        "score": [state["score"][0], state["score"][1]]
+    }
+
 def play(state, step):
     if valid_step(state, step):
         apply_play(state, step)

@@ -4,7 +4,7 @@ from copy import copy, deepcopy
 from math import sqrt, log
 
 K = 5
-NB_SIMUL_P0 = 1000
+NB_SIMUL_P0 = 5000
 
 class Node():
   """ The Node object is one node of the Monte Carlo tree
@@ -21,7 +21,10 @@ class Node():
     children: list of children nodes
   """
   def __init__(self, play, parent=None):
-    self.play = play
+    if play != None:
+      self.play = [play[0], play[1]]
+    else:
+      self.play = None
     self.parent = parent
     self.availability = 0
     self.visits = 0
@@ -90,11 +93,11 @@ def copy_state(state):
     "leading_player": state["leading_player"],
     "current_player": state["current_player"],
     "trump_card": state["trump_card"],
-    "trick": {0:state["trick"][0], 1:state["trick"][1]},
+    "trick": [state["trick"][0], state["trick"][1]],
     "hands": hands,
     "discards": discards,
     "private_discards": private_discards,
-    "score": {0:state["score"][0], 1:state["score"][1]}
+    "score": [state["score"][0], state["score"][1]]
   }
 
 def aquire_knowledge(state):
@@ -193,7 +196,7 @@ def select(node, state):
   for p in allowed:
     exists = False
     for n in node.children:
-      if p == n.play:
+      if p[0] == n.play[0] and p[1] == n.play[1]:
         exists = True
         list_children.append(n)
         break

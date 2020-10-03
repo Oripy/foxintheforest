@@ -109,7 +109,9 @@ def aquire_knowledge(state):
   next_special = False
   for p in state["plays"]:
     if p[0] == other_player(state["player"]) and p[1] in opponent_hand:
-        opponent_hand.remove(p[1])
+      opponent_hand.remove(p[1])
+    elif p[1] in remaining_cards:
+      remaining_cards.remove(p[1])
     if next_special:
       next_special = False
     else:
@@ -144,8 +146,8 @@ def aquire_knowledge(state):
           remaining_cards += draw_deck
           draw_deck = []
         else:
-          if p[1] in draw_deck:
-            draw_deck.remove(p[1])
+          if p[2] in draw_deck:
+            draw_deck.remove(p[2])
         next_special = True
       if p[1][0] == 3:
         if p[0] == other_player(state["player"]):

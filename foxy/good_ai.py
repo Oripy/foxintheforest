@@ -27,19 +27,24 @@ class Node():
     self.visits = 0
     self.reward = 0
     self.children = []
+    self.outcome_p0 = {"humble": 0, "defeated":0, "victorious":0, "greedy":0}
   
   def add_child(self, node):
     self.children.append(node)
   
   def __repr__(self):
-    return f"{self.play} visits:{self.visits} reward:{self.reward} av.:{self.availability}"
+    sum = self.outcome_p0["humble"] + self.outcome_p0["defeated"] + self.outcome_p0["victorious"] + self.outcome_p0["greedy"]
+    if sum == 0:
+      sum = 1
+    return f"""{self.play} visits:{self.visits} reward:{self.reward} av.:{self.availability} h:{self.outcome_p0["humble"]/sum*100:.2f}%,d:{self.outcome_p0["defeated"]/sum*100:.2f}%,v:{self.outcome_p0["victorious"]/sum*100:.2f}%,g:{self.outcome_p0["greedy"]/sum*100:.2f}% : V:{(self.outcome_p0["victorious"]+self.outcome_p0["humble"])/sum*100:.2f}"""
 
   def show(self, indent=0, depth=1):
     """ print the tree in the console starting at this node with the given depth """
-    text = ""
-    for i in range(indent):
-      text += "  "
-    text += f"{self.play} visit:{self.visits} reward:{self.reward} av.:{self.availability}"
+    text = "  "*indent
+    sum = self.outcome_p0["humble"] + self.outcome_p0["defeated"] + self.outcome_p0["victorious"] + self.outcome_p0["greedy"]
+    if sum == 0:
+      sum = 1
+    text += f"""{self.play} visits:{self.visits} reward:{self.reward} av.:{self.availability} h:{self.outcome_p0["humble"]/sum*100:.2f}%,d:{self.outcome_p0["defeated"]/sum*100:.2f}%,v:{self.outcome_p0["victorious"]/sum*100:.2f}%,g:{self.outcome_p0["greedy"]/sum*100:.2f}% : V:{(self.outcome_p0["victorious"]+self.outcome_p0["humble"])/sum*100:.2f}"""
     print(text)
     if depth > 0:
       for c in sorted(self.children, key=lambda a:a.visits, reverse=True):
@@ -228,6 +233,15 @@ def select_play(state, runs):
     while node.parent != None:
       node.visits += 1
       node.reward += s["score"][player]
+      tricks_won = len(s["discards"][0])//2
+      if tricks_won <= 3:
+        node.outcome_p0["humble"] += 1
+      elif tricks_won <= 6:
+        node.outcome_p0["defeated"] += 1
+      elif tricks_won <= 9:
+        node.outcome_p0["victorious"] += 1
+      else:
+        node.outcome_p0["greedy"] += 1
       node = node.parent
     
   maxi = 0

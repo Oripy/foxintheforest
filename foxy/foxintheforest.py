@@ -88,13 +88,13 @@ def apply_play(state, step):
             action = True
             card_draw = pick_cards(state["draw_deck"], 1)[0]
             state["hands"][player].append(card_draw)
-            state["plays"][-1].append(card_draw)
+            state["plays"][-1] = [state["plays"][-1][0], state["plays"][-1][1], card_draw]
             state["current_player"] = player
         elif card[0] == 3 and len(state["hands"][player]) != 0:
             action = True
             card_picked = state["trump_card"]
             state["hands"][player].append(card_picked)
-            state["plays"][-1].append(card_picked)
+            state["plays"][-1] = [state["plays"][-1][0], state["plays"][-1][1], card_picked]
             state["trump_card"] = None
             state["current_player"] = player
 
@@ -293,22 +293,32 @@ def list_allowed(state, player):
 
 def get_player_state(state, player):
     clean_plays = []
-    change_next = False
+    hide_next = False
     skip_next_check = False
     for p in state["plays"]:
-        if change_next:
-            clean_plays.append([p[0], [None, None]])
-            change_next = False
+        if p[0] == player:
+            clean_plays.append(p)
         else:
-            if p[0] == other_player(player) and p[1][0] == 5 and not skip_next_check:
-                clean_plays.append([p[0], p[1]])
-                change_next = True
+            if p[1][0] == 5 and not skip_next_check:
+                if len(state["hands"][other_player(player)]) != 0:
+                    skip_next_check = True
+                    hide_next = True
+                clean_plays.append([p[0], p[1], [None, None]])
+            elif p[1][0] == 3 and not skip_next_check:
+                skip_next_check = True
+                if len(p) == 2:
+                    clean_plays.append([p[0], p[1]])
+                else:
+                    clean_plays.append([p[0], p[1], p[2]])
+            elif skip_next_check:
+                if hide_next:
+                    clean_plays.append([p[0], [None, None]])
+                    hide_next = False
+                else:
+                    clean_plays.append([p[0], p[1]])
+                skip_next_check = False
             else:
                 clean_plays.append(p)
-        if (p[1][0] == 3 or p[1][0] == 5) and not change_next and not skip_next_check:
-            skip_next_check = True
-        else:
-            skip_next_check = False
     return {
         "plays": clean_plays,
         "player": player,

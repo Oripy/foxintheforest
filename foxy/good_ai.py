@@ -245,16 +245,23 @@ def select_play(state, runs):
       play(s, node.play)
     while node.parent != None:
       node.visits += 1
-      node.reward += s["score"][player]
       tricks_won = len(s["discards"][0])//2
       if tricks_won <= 3:
         node.outcome_p0["humble"] += 1
+        if player == 0:
+          node.reward += 1
       elif tricks_won <= 6:
         node.outcome_p0["defeated"] += 1
+        if player == 1:
+          node.reward += 1
       elif tricks_won <= 9:
         node.outcome_p0["victorious"] += 1
+        if player == 0:
+          node.reward += 1
       else:
         node.outcome_p0["greedy"] += 1
+        if player == 1:
+          node.reward += 1
       node = node.parent
     
   maxi = 0

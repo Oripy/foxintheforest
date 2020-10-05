@@ -53,7 +53,7 @@ class Node():
       for c in sorted(self.children, key=lambda a:a.visits, reverse=True):
         c.show(indent=indent+1, depth=depth-1)
   
-def UCB(node):
+def UCT(node):
   """ output Upper Confidence Bound formula result for the given node """
   return node.reward / node.visits + K * sqrt(log(node.availability) / node.visits)
 
@@ -188,8 +188,8 @@ def random_state(state, knowledge):
   s["draw_deck"] = draw_deck + remaining_cards
   return s
 
-def select(node, state):
-  """ Select one of the allowed children based on UCB calculation """
+def select(node, state, ai_player):
+  """ Select one of the allowed children based on UCT calculation """
   allowed = list_allowed(state, state["current_player"])
   shuffle(allowed)
   list_children = []
@@ -205,7 +205,10 @@ def select(node, state):
       node.add_child(new_child)
       list_children.append(new_child)
     
-  maxi = 0
+  if ai_player == state["current_player"]: 
+    min_max = 0
+  else:
+    min_max = float("inf")
   selected = None
   for n in list_children:
     n.availability += 1
@@ -214,10 +217,15 @@ def select(node, state):
       selected = n
       break
     else:
-      value = UCB(n)
-      if value > maxi:
-        maxi = value
-        selected = n
+      value = UCT(n)
+      if ai_player == state["current_player"]: 
+        if value > min_max:
+          min_max = value
+          selected = n
+      else:
+        if value < min_max:
+          min_max = value
+          selected = n
   return selected
 
 def select_play(state, runs):
@@ -233,7 +241,7 @@ def select_play(state, runs):
     s = random_state(state, k)
     node = root
     while len(s["hands"][0]) != 0 or len(s["hands"][1]) != 0:
-      node = select(node, s)
+      node = select(node, s, player)
       play(s, node.play)
     while node.parent != None:
       node.visits += 1

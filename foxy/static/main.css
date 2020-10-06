@@ -1,307 +1,156 @@
 body {
-  background: #fafafa;
-  color: #333333;
-  margin-top: 5rem;
+  margin: 0;
+  font-family: Helvetica, sans-serif;
+  background-color: #f4f4f4;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  color: #444444;
+a {
+  color: #000;
 }
 
-.bg-steel {
-  background-color: #5f788a;
+/* header */
+.header {
+  background-color: #fff;
+  box-shadow: 1px 1px 4px 0 rgba(0,0,0,.1);
+  position: fixed;
+  width: 100%;
+  z-index: 3;
 }
 
-.site-header .navbar-nav .nav-link {
-  color: #cbd5db;
+.header ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+  background-color: #fff;
 }
 
-.site-header .navbar-nav .nav-link:hover {
-  color: #ffffff;
+.header li a {
+  display: block;
+  padding: 20px 20px;
+  border-right: 1px solid #f4f4f4;
+  text-decoration: none;
 }
 
-.site-header .navbar-nav .nav-link.active {
-  font-weight: 500;
+.header li a:hover,
+.header .menu-btn:hover {
+  background-color: #f4f4f4;
 }
 
-.content-section {
-  background: #ffffff;
+.header .title {
+  display: block;
+  float: left;
+  font-size: 2em;
   padding: 10px 20px;
-  border: 1px solid #dddddd;
-  border-radius: 3px;
-  margin-bottom: 20px;
-}
-
-.article-title {
-  color: #444444;
-}
-
-a.article-title:hover {
-  color: #428bca;
   text-decoration: none;
+
+  color: #4d4d4d;
+  text-shadow: 0 1px 0 #fff;
+  white-space: nowrap;
+  font-family: Gill Sans Extrabold, sans-serif;
+  font-weight: normal;
 }
 
-.article-content {
-  white-space: pre-line;
+/* menu */
+.header .menu {
+  clear: both;
+  max-height: 0;
+  transition: max-height .2s ease-out;
 }
 
-.article-img {
-  height: 65px;
-  width: 65px;
-  margin-right: 16px;
+/* menu icon */
+.header .menu-icon {
+  cursor: pointer;
+  display: inline-block;
+  float: right;
+  padding: 28px 20px;
+  position: relative;
+  user-select: none;
 }
 
-.article-metadata {
-  padding-bottom: 1px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid #e3e3e3
+.header .menu-icon .navicon {
+  background: #333;
+  display: block;
+  height: 2px;
+  position: relative;
+  transition: background .2s ease-out;
+  width: 18px;
 }
 
-.article-metadata a:hover {
-  color: #333;
-  text-decoration: none;
+.header .menu-icon .navicon:before,
+.header .menu-icon .navicon:after {
+  background: #333;
+  content: '';
+  display: block;
+  height: 100%;
+  position: absolute;
+  transition: all .2s ease-out;
+  width: 100%;
 }
 
-.article-svg {
-  width: 25px;
-  height: 25px;
-  vertical-align: middle;
+.header .menu-icon .navicon:before {
+  top: 5px;
 }
 
-.account-img {
-  height: 125px;
-  width: 125px;
-  margin-right: 20px;
-  margin-bottom: 16px;
+.header .menu-icon .navicon:after {
+  top: -5px;
 }
 
-.account-heading {
-  font-size: 2.5rem;
+/* menu btn */
+.header .menu-btn {
+  display: none;
 }
 
-#playingarea
-{
-	display: grid;
-	grid-template-columns: 1fr 4fr 1fr;
-	grid-template-rows: 1fr 2fr 1fr 1fr;
-    grid-template-areas:
-    "opponentinfo opponenthand ."
-    "deck trick help"
-    "playerinfo playerhand ."
-    "history history history";
-  	grid-row-gap: 2%;
-
-	justify-items: center;
-	align-items: center;
+.header .menu-btn:checked ~ .menu {
+  max-height: 240px;
 }
 
-#playerhand
-{
-    text-align: center;
-	grid-area: playerhand;
+.header .menu-btn:checked ~ .menu-icon .navicon {
+  background: transparent;
 }
 
-#opponenthand
-{
-    text-align: center;
-	grid-area: opponenthand;
+.header .menu-btn:checked ~ .menu-icon .navicon:before {
+  transform: rotate(-45deg);
 }
 
-#deck
-{
-	grid-area: deck;
+.header .menu-btn:checked ~ .menu-icon .navicon:after {
+  transform: rotate(45deg);
 }
 
-#trick
-{
-	grid-area: trick;
+.header .menu-btn:checked ~ .menu-icon:not(.steps) .navicon:before,
+.header .menu-btn:checked ~ .menu-icon:not(.steps) .navicon:after {
+  top: 0;
 }
 
-@media (hover: none) {
-    #history
-    {
-        display: none;
-    }
-}
-
-@media (hover: hover) {
-    #history
-    {
-        grid-area: history;
-        justify-self: end;
-        filter: opacity(50%);
-    }
-}
-
-#history .opponent
-{
-    transform: translate(0px, -20px) scale(0.5);
-    margin: -20px;
-}
-
-#history .player
-{
-    transform: translate(0px, 20px) scale(0.5);
-    margin: -20px;
-}
-
-#history .special
-{
-    background-color: lightcyan;
-    transform: scale(0.4);
-}
-
-.gameinfo.opponent
-{
-	grid-area: opponentinfo;
-}
-
-.gameinfo.player
-{
-	grid-area: playerinfo;
-}
-
-.playingcard
-{
-	width: 57px;
-	height: 89px;
-	padding: 5px;
-	border: solid 1px #808080;
-	background-color: white;
-	display: inline-block;
-	border-radius: 10px;
-	font-size: 24pt;
-	text-align: center;
-
-	font-weight: bold;
-	font-family: "Arial Black", Gadget, sans-serif;
-	line-height: 1.15;
-	user-select: none;
-}
-
-#playerhand .playingcard
-{
-	margin: -8px;
-}
-
-#opponenthand .playingcard
-{
-	margin: -8px;
-}
-
-@media (hover: hover) {
-    .playingcard.selectable:hover
-    {
-    	background-color: lightcyan;
-    	/* transform-origin: bottom center; */
-    	transform: scale(1.5)
-    }
-
-    .playingcard.selectable:active
-    {
-    	background-color: coral;
-    	/* transform-origin: bottom center; */
-    	transform: scale(1.6)
-    }
-}
-
-.playingcard.selectable.sel
-{
-	background-color: lightcyan;
-	/* transform-origin: bottom center; */
-	transform: scale(1.5)
-}
-
-.playingcard.highlight
-{
-	background-color: lightgreen;
-}
-
-.back
-{
-	background: repeating-linear-gradient(
-		45deg,
-		#606dbc,
-		#606dbc 10px,
-		#465298 10px,
-		#465298 20px
-	);
-}
-
-.empty
-{
-	background: lightgrey;
-}
-
-.red
-{
-	color: red;
-}
-
-.green
-{
-	color: green;
-}
-
-.black
-{
-	color: black;
-}
-
-.spacer
-{
-    margin: 5px;
-    display: inline;
-}
-
-.preview
-{
-	transform: scale(0.5);
-}
-
-.preview > :first-child
-{
-	transform: rotate(-10deg);
-	margin: -8px;
-}
-
-.preview > :nth-child(2)
-{
-	transform: rotate(10deg);
-	margin: -8px;
-}
-
-.gameinfo
-{
-	text-align: center;
-}
-
-.select
-{
-	border-radius: 5px;
-	background: rgb(38, 173, 33);
-	padding-left: 5px;
-	padding-right: 5px;
-}
-
-.help
-{
-    transform: scale(2.5);
-    grid-area: help;
-}
-
-.help > :first-child
-{
-    margin-bottom: 0;
-}
-
-.helptext
-{
-    font-size: 4.9px;
-}
-
-.hidden
-{
+@media (min-width: 768px) {
+  .header li {
+    float: left;
+  }
+  .header li a {
+    padding: 20px 30px;
+  }
+  .header .menu {
+    clear: none;
+    float: right;
+    max-height: none;
+  }
+  .header .menu-icon {
     display: none;
+  }
 }
 
+.content {
+  width: 100%;
+  height: 100%;
+  background:rgba(255,255,255,0.5); 
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.centered {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

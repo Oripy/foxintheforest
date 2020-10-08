@@ -40,7 +40,7 @@ a {
 .header .title {
   display: block;
   float: left;
-  font-size: 2em;
+  font-size: 1.5em;
   padding: 10px 20px;
   text-decoration: none;
 
@@ -137,6 +137,10 @@ a {
   .header .menu-icon {
     display: none;
   }
+
+  .header .title {
+    font-size: 2em;
+  }
 }
 
 /* Main area styling */
@@ -146,7 +150,7 @@ a {
   height: 100%;
   background:rgba(255,255,255,0.5); 
   position: fixed;
-  top: 0;
+  top: 50px;
   left: 0;
 }
 
@@ -158,12 +162,37 @@ a {
   text-align: center;
 }
 
+.lobby {
+  padding: 10px;
+  display: grid;
+  grid-template-rows: auto;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas: 
+    "new new"
+    "list1 list2";
+  gap: 10px;
+  justify-items: center;
+}
+
+.newgames {
+  grid-area: new;
+}
+
+.gamelist1 {
+  grid-area: list1;
+}
+
+.gamelist2 {
+  grid-area: list2;
+}
+
 /* Flash message styling */
 .alert {
-  position:absolute;
-  bottom:0;
-  width:100%;
-  padding: 10px;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding-top: 10px 0 10px;
+  margin: 0;
 }
 .alert.danger {
   background-color: #ca4242;
@@ -180,16 +209,24 @@ a {
 /* Form styling */
 
 input {
+  margin: 2px 0;
+}
+
+.centered input {
   display: block;
   margin: 8px 0;
 }
 
 input[type=text], input[type=password] {
-  padding: 12px 20px;
+  padding: 6px 10px;
   background-color: #B2F7EF;
   box-sizing: border-box;
   border: 3px solid #7BDFF2;
   outline: none;
+}
+
+.centered input[type=text], .centered input[type=password] {
+  padding: 12px 20px;
   text-align: center;
   font-size: large;
 }
@@ -199,13 +236,17 @@ input[type=text]:focus, input[type=password]:focus {
 }
 
 input[type=submit] {
-  padding: 12px 20px;
+  padding: 6px 10px;
   background-color: #B2F7EF;
   border: 3px solid #7BDFF2;
   text-align: center;
   text-decoration: none;
   margin-left: auto;
   margin-right: auto;
+}
+
+.centered input[type=submit] {
+  padding: 12px 20px;
   font-size: large;
 }
 

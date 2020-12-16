@@ -2,6 +2,7 @@ body {
   background: #fafafa;
   color: #333333;
   margin-top: 5rem;
+  overflow: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -82,8 +83,8 @@ a.article-title:hover {
 #playingarea
 {
 	display: grid;
-	grid-template-columns: 1fr 4fr 1fr;
-	grid-template-rows: 1fr 2fr 1fr 1fr;
+	grid-template-columns: [col-start] 1fr 4fr 1fr [col-end];
+	grid-template-rows: [row-start] 1fr 2fr 1fr [row-end] 1fr;
     grid-template-areas:
     "opponentinfo opponenthand ."
     "deck trick help"
@@ -117,19 +118,16 @@ a.article-title:hover {
 	grid-area: trick;
 }
 
+#history {
+  grid-area: history;
+  filter: opacity(50%);
+  justify-self: end;
+}
+
 @media (hover: none) {
     #history
     {
         display: none;
-    }
-}
-
-@media (hover: hover) {
-    #history
-    {
-        grid-area: history;
-        justify-self: end;
-        filter: opacity(50%);
     }
 }
 
@@ -305,3 +303,31 @@ a.article-title:hover {
     display: none;
 }
 
+.invisible 
+{
+  visibility: hidden;
+}
+
+#message 
+{
+  grid-column-start: col-start;
+  grid-column-end: col-end;
+  grid-row-start: row-start;
+  grid-row-end: row-end;
+  align-self: stretch;
+  justify-self: stretch;
+  
+  z-index: 99;
+  opacity: .5; 
+  display: flex;
+}
+
+#message div
+{
+  color: black;
+  font-size: 100pt;
+  font-weight: bold;
+  font-family: "Arial Black", Gadget, sans-serif;
+
+  margin: auto;
+}

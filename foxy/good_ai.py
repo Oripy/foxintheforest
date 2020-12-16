@@ -113,6 +113,9 @@ def aquire_knowledge(state):
   for p in state["plays"]:
     if p[0] == other_player(state["player"]) and p[1] in opponent_hand:
       opponent_hand.remove(p[1])
+    elif p[0] == other_player(state["player"]) and p[1][1] in opponent_max_one:
+      opponent_max_one.remove(p[1][1])
+      opponent_cuts.append(p[1][1])
     elif p[1] in remaining_cards:
       remaining_cards.remove(p[1])
     if next_special:
@@ -141,7 +144,7 @@ def aquire_knowledge(state):
         if p[0] == other_player(state["player"]):
           for cut in opponent_cuts:
             if cut not in opponent_max_one:
-              opponent_max_one += opponent_cuts
+              opponent_max_one.append(cut)
             else:
               opponent_max_one.remove(cut)
           opponent_cuts = []

@@ -1,8 +1,10 @@
 {% extends 'layout.html' %}
-
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='game.css') }}">
+{% endblock %}
 {% block content %}
 <div id="playingarea">
-    <div id="deck">
+    <div id="decks">
         <div id="deck" class="playingcard back" title="Deck">&nbsp;<br />&nbsp;</div>
         <div id="trump" class="playingcard empty" title="Trump card">&nbsp;<br />&nbsp;</div>
     </div>

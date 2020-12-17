@@ -1,0 +1,23 @@
+.lobby {
+  padding: 10px;
+  display: grid;
+  grid-template-rows: auto;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas: 
+      "new new"
+      "list1 list2";
+  gap: 10px;
+  justify-items: center;
+}
+
+.newgames {
+  grid-area: new;
+}
+
+.gamelist1 {
+  grid-area: list1;
+}
+
+.gamelist2 {
+  grid-area: list2;
+}

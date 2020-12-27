@@ -10,6 +10,17 @@
   justify-items: center;
 }
 
+@media (max-width: 768px) {
+  .lobby {
+    grid-template-rows: auto;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 
+      "new new"
+      "list1 list1"
+      "list2 list2";
+  }
+}
+
 .newgames {
   grid-area: new;
 }

@@ -1,8 +1,10 @@
 #playingarea
 {
+	height: calc(100% - 50px);
+
 	display: grid;
 	grid-template-columns: [col-start] 1fr 4fr 1fr [col-end];
-	grid-template-rows: [row-start] 1fr 2fr 1fr [row-end] 1fr;
+	grid-template-rows: [row-start] 1fr auto 1fr [row-end] 1fr;
     grid-template-areas:
     "opponentinfo opponenthand ."
     "decks trick help"
@@ -12,7 +14,24 @@
 
 	justify-items: center;
     align-items: center;
-    padding-top: 20px;
+}
+
+@media (max-width: 768px) {
+    #history
+    {
+        display: none;
+	}
+	#playingarea
+	{
+		display: grid;
+		grid-template-columns: [col-start] 1fr 4fr 1fr [col-end];
+		grid-template-rows: [row-start] 1fr auto 1fr [row-end];
+		grid-template-areas:
+		"opponentinfo opponenthand ."
+		"decks trick help"
+		"playerinfo playerhand .";
+		grid-row-gap: 0%;
+	}
 }
 
 #playerhand
@@ -41,13 +60,6 @@
   grid-area: history;
   filter: opacity(50%);
   justify-self: end;
-}
-
-@media (hover: none) {
-    #history
-    {
-        display: none;
-    }
 }
 
 #history .opponent
@@ -83,7 +95,7 @@
 	width: 57px;
 	height: 89px;
 	padding: 5px;
-	border: solid 1px #808080;
+	border: solid 3px #808080;
 	background-color: white;
 	display: inline-block;
 	border-radius: 10px;
@@ -186,6 +198,7 @@
 .gameinfo
 {
 	text-align: center;
+	white-space: nowrap;
 }
 
 .select
@@ -199,7 +212,8 @@
 .help
 {
     transform: scale(2.5);
-    grid-area: help;
+	grid-area: help;
+	justify-self: start;
 }
 
 .help > :first-child
@@ -207,9 +221,9 @@
     margin-bottom: 0;
 }
 
-.helptext
-{
-    font-size: 4.9px;
+.helptext {
+	font-size: 4.9px;
+	text-align: justify;
 }
 
 .hidden

@@ -1,6 +1,6 @@
 #playingarea
 {
-	height: calc(100% - 50px);
+	height: calc(100% - 58px);
 
 	display: grid;
 	grid-template-columns: [col-start] 1fr 4fr 1fr [col-end];
@@ -10,7 +10,7 @@
     "decks trick help"
     "playerinfo playerhand ."
     "history history history";
-  	grid-row-gap: 2%;
+  	/* grid-row-gap: 2%; */
 
 	justify-items: center;
     align-items: center;
@@ -48,6 +48,7 @@
 
 #decks
 {
+	text-align: center;
 	grid-area: decks;
 }
 
@@ -83,11 +84,13 @@
 .gameinfo.opponent
 {
 	grid-area: opponentinfo;
+	align-self: end;
 }
 
 .gameinfo.player
 {
 	grid-area: playerinfo;
+	align-self: start;
 }
 
 .playingcard

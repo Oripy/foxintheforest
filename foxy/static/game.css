@@ -27,9 +27,9 @@
 		grid-template-columns: [col-start] 1fr 4fr 1fr [col-end];
 		grid-template-rows: [row-start] 1fr auto 1fr [row-end];
 		grid-template-areas:
-		"opponentinfo opponenthand ."
+		"opponentinfo opponenthand opponenthand"
 		"decks trick help"
-		"playerinfo playerhand .";
+		"playerinfo playerhand playerhand";
 		grid-row-gap: 0%;
 	}
 }
@@ -111,9 +111,14 @@
 	user-select: none;
 }
 
-#playerhand .playingcard, #opponenthand .playingcard
+#playerhand .playingcard
 {
 	margin: -8px;
+}
+
+#opponenthand .playingcard
+{
+	margin: -25px;
 }
 
 @media (hover: hover) {

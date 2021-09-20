@@ -24,7 +24,7 @@ class Games(db.Model):
     second_player = db.relationship("User", foreign_keys=[second_player_id])
     status = db.Column(db.Integer, nullable=False, default=0)
 
-    state = db.Column(db.String(1000))
+    game = db.Column(db.String(1000))
 
     def __repr__(self):
         status = ["created", "started", "finished"][self.status]

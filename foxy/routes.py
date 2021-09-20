@@ -19,16 +19,16 @@ def main():
 @login_required
 def new():
     game = foxintheforest.new_game()
-    state = json.dumps(game)
+    game = json.dumps(game)
     if 'IA' in request.form:
         ia = User.query.filter_by(username=request.form['IA']).first()
         if ia:
-            game_db = Games(state=state, name=request.form['gamename'], first_player_id=current_user.id, second_player_id=ia.id, status=1)
+            game_db = Games(game=game, name=request.form['gamename'], first_player_id=current_user.id, second_player_id=ia.id, status=1)
         else:
             flash(f'This IA does not exists.', 'danger')
             return redirect(url_for('lobby'))
     else:
-        game_db = Games(state=state, name=request.form['gamename'], first_player_id=current_user.id)
+        game_db = Games(game=game, name=request.form['gamename'], first_player_id=current_user.id)
     db.session.add(game_db)
     db.session.commit()
     return redirect(url_for('game', id=game_db.id))
@@ -109,17 +109,19 @@ def play():
         return redirect(url_for('lobby'))
     if (game.first_player_id == current_user.id or game.second_player_id == current_user.id) \
         and (game.second_player_id != None) and (game.status == 1):
-        state = json.loads(game.state)
+        game = json.loads(game.game)
+        state = foxintheforest.get_game_state(game)
         if (game.first_player_id == current_user.id and state["current_player"] == 0) \
            or (game.second_player_id == current_user.id and state["current_player"] == 1):
             if req["play"][-1] in ["h", "s", "c"] and int(req["play"][:-1]):
                 card_played = foxintheforest.decode_card(req["play"])
-                state = foxintheforest.play(state, [player, card_played])
+                game = foxintheforest.play(game, [player, card_played])
+                state = foxintheforest.get_game_state(game)
                 if len(state["discards"][0]) + len(state["discards"][1]) == 26:
                     game.status = 2
-                game.state = json.dumps(state)
+                game.game = json.dumps(game)
                 db.session.commit()
-        return make_response(jsonify(foxintheforest.get_player_state(state, player)), 200)
+        return make_response(jsonify(foxintheforest.get_player_game(game, player)), 200)
     else:
         flash(f'You are not a player in this game.', 'danger')
         return redirect(url_for('lobby'))
@@ -134,21 +136,23 @@ def state():
         flash(f'This game does not exists.', 'danger')
         return redirect(url_for('lobby'))
     if game.second_player:
+        gameState = json.loads(game.game)
         if game.second_player.username in AI_dict.keys():
-            state = json.loads(game.state)
+            state = foxintheforest.get_game_state(gameState)
             if state["current_player"] == 1:
-                ai_play = AI_dict[game.second_player.username].ia_play(foxintheforest.get_player_state(state, 1))
-                state = foxintheforest.play(state, ai_play)
+                ai_play = AI_dict[game.second_player.username].ia_play(foxintheforest.get_game_state(foxintheforest.get_player_game(gameState, 1)))
+                game = foxintheforest.play(gameState, ai_play)
+                state = foxintheforest.get_game_state(game)
                 if len(state["discards"][0]) + len(state["discards"][1]) == 26:
                     game.status = 2
-                game.state = json.dumps(state)
+                game.game = json.dumps(game)
                 db.session.commit()
     if game.first_player_id == current_user.id:
-        state = json.loads(game.state)
-        return make_response(jsonify(foxintheforest.get_player_state(state, 0)), 200)
+        game = json.loads(game.game)
+        return make_response(jsonify(foxintheforest.get_player_game(game, 0)), 200)
     elif game.second_player_id == current_user.id:
-        state = json.loads(game.state)
-        return make_response(jsonify(foxintheforest.get_player_state(state, 1)), 200)
+        game = json.loads(game.game)
+        return make_response(jsonify(foxintheforest.get_player_game(game, 1)), 200)
     else:
         flash(f'You are not a player in this game.', 'danger')
         return redirect(url_for('lobby'))

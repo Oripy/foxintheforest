@@ -160,6 +160,12 @@ def valid_step(state, step):
     player = step[0]
     card = step[1]
     # print(card, player, state)
+    # print(f"testing player {player}")
+    if not player == state["current_player"]:
+        # print(f"NOK, player {player} not supposed to play")
+        return False
+    # else:
+        # print(f"OK, player {player} turn to play")
     # print(f"testing {card}")
     if card in state["hands"][player]:
         # print("OK, card in hand")
@@ -208,7 +214,7 @@ def valid_step(state, step):
             else:
                 return False
     else:
-        print("NOK, card not in hand")
+        # print("NOK, card not in hand")
         return False
 
 def score(state):

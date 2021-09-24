@@ -42,10 +42,6 @@ def copy_state(state):
     """ output a cloned copy of the given state """
     return {
         "plays": state["plays"].copy(),
-        "first_player": state["first_player"],
-        "init_draw_deck": state["init_draw_deck"].copy(),
-        "init_trump_card": state["init_trump_card"],
-        "init_hands": [state["init_hands"][0].copy(), state["init_hands"][1].copy()],
         "private_discards": [state["private_discards"][0].copy(), state["private_discards"][1].copy()],
         "trick": [state["trick"][0],state["trick"][1]],
         "current_player": state["current_player"],
@@ -54,61 +50,67 @@ def copy_state(state):
         "discards": [state["discards"][0].copy(), state["discards"][1].copy()],
         "hands": [state["hands"][0].copy(), state["hands"][1].copy()],
         "trump_card": state["trump_card"],
-        "draw_deck": game["draw_deck"].copy()
+        "draw_deck": state["draw_deck"].copy()
     }
 
-def get_game_state(game):
-    state = copy_game(game)
+def get_state_from_game(game):
+    state = {}
+    state["plays"] = []
     state["private_discards"] = [[], []]
     state["trick"] = [None, None]
-    state["current_player"] = state["first_player"]
-    state["leading_player"] = state["first_player"]
+    state["current_player"] = game["first_player"]
+    state["leading_player"] = game["first_player"]
     state["score"] = [0, 0]
     state["discards"] = [[], []]
-    state["hands"] = [state["init_hands"][0].copy(), state["init_hands"][1].copy()]
-    state["trump_card"] = state["init_trump_card"]
+    state["hands"] = [game["init_hands"][0].copy(), game["init_hands"][1].copy()]
+    state["trump_card"] = game["init_trump_card"]
     state["draw_deck"] = game["init_draw_deck"].copy()
     special_type = None
-    for p in state["plays"]:
-        if special_type == None:
-            state["trick"][p[0]] = p[1]
-            if p[1] in state["hands"][p[0]]:
-                state["hands"][p[0]].pop(state["hands"][p[0]].index(p[1]))
-            else:
-                state["hands"][p[0]].pop(0)
-            if p[1][0] == 3:
-                special_type = 3
-                state["hands"][p[0]].append(state["trump_card"])
-                state["trump_card"] = []
-            elif p[1][0] == 5:
-                special_type = 5
-                state["hands"][p[0]].append(pick_cards(state["draw_deck"], 1)[0])
-        elif special_type == 5:
-            state["private_discards"][p[0]].append(p[1])
-            if p[1] in state["hands"][p[0]]:
-                state["hands"][p[0]].pop(state["hands"][p[0]].index(p[1]))
-            else:
-                state["hands"][p[0]].pop(0)
-            special_type = None
-        elif special_type == 3:
-            state["trump_card"] = p[1]
-            if p[1] in state["hands"][p[0]]:
-                state["hands"][p[0]].pop(state["hands"][p[0]].index(p[1]))
-            else:
-                state["hands"][p[0]].pop(0)
-            special_type = None
-        if special_type == None:
-            if not None in state["trick"]:
-                win, state["leading_player"] = trick_winner(state["leading_player"], state["trick"], state["trump_card"])
-                state["discards"][win].append(state["trick"][0])
-                state["discards"][win].append(state["trick"][1])
-                state["trick"] = [None, None]
-                state["current_player"] = state["leading_player"]
-            else:
-                state["current_player"] = other_player(p[0])
+    for step in game["plays"]:
+        state, special_type = do_step(state, step, special_type)
     if len(state["hands"][0]) + len(state["hands"][1]) == 0:
         state["score"] = score(state)
     return state
+
+def do_step(state, step, special_type):
+    state["plays"].append(step)
+    if special_type == None:
+        state["trick"][step[0]] = step[1]
+        if step[1] in state["hands"][step[0]]:
+            state["hands"][step[0]].pop(state["hands"][step[0]].index(step[1]))
+        else:
+            state["hands"][step[0]].pop(0)
+        if step[1][0] == 3:
+            special_type = 3
+            state["hands"][step[0]].append(state["trump_card"])
+            state["trump_card"] = []
+        elif step[1][0] == 5:
+            special_type = 5
+            state["hands"][step[0]].append(pick_cards(state["draw_deck"], 1)[0])
+    elif special_type == 5:
+        state["private_discards"][step[0]].append(step[1])
+        if step[1] in state["hands"][step[0]]:
+            state["hands"][step[0]].pop(state["hands"][step[0]].index(step[1]))
+        else:
+            state["hands"][step[0]].pop(0)
+        special_type = None
+    elif special_type == 3:
+        state["trump_card"] = step[1]
+        if step[1] in state["hands"][step[0]]:
+            state["hands"][step[0]].pop(state["hands"][step[0]].index(step[1]))
+        else:
+            state["hands"][step[0]].pop(0)
+        special_type = None
+    if special_type == None:
+        if not None in state["trick"]:
+            win, state["leading_player"] = trick_winner(state["leading_player"], state["trick"], state["trump_card"])
+            state["discards"][win].append(state["trick"][0])
+            state["discards"][win].append(state["trick"][1])
+            state["trick"] = [None, None]
+            state["current_player"] = state["leading_player"]
+        else:
+            state["current_player"] = other_player(step[0])
+    return state, special_type
 
 def get_player_game(game, player):
     hands = [[], []]
@@ -148,7 +150,7 @@ def get_player_game(game, player):
     return game_player
 
 def play(game, step):
-    state = get_game_state(game)
+    state = get_state_from_game(game)
     if valid_step(state, step):
         game = apply_play(game, step)
     return game
@@ -346,22 +348,22 @@ def list_allowed(state, player):
 if __name__ ==  '__main__':
     game = new_game()
     print(game)
-    state = get_game_state(game)
+    state = get_state_from_game(game)
     while len(state["hands"][0]) != 0 or len(state["hands"][1]) != 0:
         current_player = state["current_player"]
         show(state, current_player)
         if current_player == 0:
-            state_0 = get_game_state(get_player_game(game, 0))
+            state_0 = get_state_from_game(get_player_game(game, 0))
             # print(state_0)
             # card_played = decode_card(input("Carte ? "))
             # selected_play = [0, card_played]
             selected_play = random.choice(list_allowed(state_0, 0))
         else:
-            state_1 = get_game_state(get_player_game(game, 1))
+            state_1 = get_state_from_game(get_player_game(game, 1))
             selected_play = random.choice(list_allowed(state_1, 1))
         print("Carte : {}{}".format(*selected_play[1]))
         play(game, selected_play)
-        state = get_game_state(game)
+        state = get_state_from_game(game)
 
     print("Résultat :")
     print("Plis gagnés : P0 {}, P1 {}".format(len(state["discards"][0])//2, len(state["discards"][1])//2))

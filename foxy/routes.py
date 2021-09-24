@@ -110,13 +110,13 @@ def play():
     if (game.first_player_id == current_user.id or game.second_player_id == current_user.id) \
         and (game.second_player_id != None) and (game.status == 1):
         game = json.loads(game.game)
-        state = foxintheforest.get_game_state(game)
+        state = foxintheforest.get_state_from_game(game)
         if (game.first_player_id == current_user.id and state["current_player"] == 0) \
            or (game.second_player_id == current_user.id and state["current_player"] == 1):
             if req["play"][-1] in ["h", "s", "c"] and int(req["play"][:-1]):
                 card_played = foxintheforest.decode_card(req["play"])
                 game = foxintheforest.play(game, [player, card_played])
-                state = foxintheforest.get_game_state(game)
+                state = foxintheforest.get_state_from_game(game)
                 if len(state["discards"][0]) + len(state["discards"][1]) == 26:
                     game.status = 2
                 game.game = json.dumps(game)
@@ -138,11 +138,11 @@ def state():
     if game.second_player:
         gameState = json.loads(game.game)
         if game.second_player.username in AI_dict.keys():
-            state = foxintheforest.get_game_state(gameState)
+            state = foxintheforest.get_state_from_game(gameState)
             if state["current_player"] == 1:
-                ai_play = AI_dict[game.second_player.username].ia_play(foxintheforest.get_game_state(foxintheforest.get_player_game(gameState, 1)))
+                ai_play = AI_dict[game.second_player.username].ia_play(foxintheforest.get_state_from_game(foxintheforest.get_player_game(gameState, 1)))
                 game = foxintheforest.play(gameState, ai_play)
-                state = foxintheforest.get_game_state(game)
+                state = foxintheforest.get_state_from_game(game)
                 if len(state["discards"][0]) + len(state["discards"][1]) == 26:
                     game.status = 2
                 game.game = json.dumps(game)

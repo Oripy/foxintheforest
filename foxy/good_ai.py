@@ -1,6 +1,5 @@
-from foxy.foxintheforest import new_game, play, pick_cards, other_player, get_player_state, list_allowed, CARDS, COLORS
-from random import shuffle, choice
-from copy import copy, deepcopy
+from foxy.foxintheforest import copy_game, copy_state, do_step, pick_cards, other_player, get_state_from_game, list_allowed, CARDS, COLORS
+from random import shuffle
 from math import sqrt, log
 
 K = 5
@@ -57,49 +56,6 @@ def UCT(node):
   """ output Upper Confidence Bound formula result for the given node """
   return node.reward / node.visits + K * sqrt(log(node.availability) / node.visits)
 
-def copy_state(state):
-  """ output a cloned copy of the given state """
-  plays = []
-  for p in state["plays"]:
-    if len(p) == 2:
-      plays.append([p[0], p[1]])
-    else:
-      plays.append([p[0], p[1], p[2]])
-  hands = []
-  if isinstance(state["hands"][0], int):
-    hands.append(state["hands"][0])
-  else:
-    hands.append(state["hands"][0].copy())
-  if isinstance(state["hands"][1], int):
-    hands.append(state["hands"][1])
-  else:
-    hands.append(state["hands"][1].copy())
-  discards = []
-  discards.append(state["discards"][0].copy())
-  discards.append(state["discards"][1].copy())
-  private_discards  = []
-  if isinstance(state["private_discards"][0], int):
-    private_discards.append(state["private_discards"][0])
-  else:
-    private_discards.append(state["private_discards"][0].copy())
-  if isinstance(state["private_discards"][1], int):
-    private_discards.append(state["private_discards"][1])
-  else:
-    private_discards.append(state["private_discards"][1].copy())
-  
-  return {
-    "plays": plays,
-    "player": state["player"],
-    "leading_player": state["leading_player"],
-    "current_player": state["current_player"],
-    "trump_card": state["trump_card"],
-    "trick": [state["trick"][0], state["trick"][1]],
-    "hands": hands,
-    "discards": discards,
-    "private_discards": private_discards,
-    "score": [state["score"][0], state["score"][1]]
-  }
-
 def aquire_knowledge(state):
   """ Extract knowledge on current state from past plays """
   remaining_cards = [c for c in CARDS if c not in state["hands"][state["current_player"]] if c not in state["discards"][0] if c not in state["discards"][1] if c not in state["private_discards"][state["current_player"]] if c != state["trump_card"]]
@@ -111,9 +67,9 @@ def aquire_knowledge(state):
   trick = []
   next_special = False
   for p in state["plays"]:
-    if p[0] == other_player(state["player"]) and p[1] in opponent_hand:
+    if p[0] == other_player(state["current_player"]) and p[1] in opponent_hand:
       opponent_hand.remove(p[1])
-    elif p[0] == other_player(state["player"]) and p[1][1] in opponent_max_one:
+    elif p[0] == other_player(state["current_player"]) and p[1][1] in opponent_max_one:
       opponent_max_one.remove(p[1][1])
       opponent_cuts.append(p[1][1])
     elif p[1] in remaining_cards:
@@ -127,7 +83,7 @@ def aquire_knowledge(state):
         trick.append(p)
       elif len(trick) == 1:
         trick.append(p)
-        if trick[0][0] == state["player"]:
+        if trick[0][0] == state["current_player"]:
           suit = trick[0][1][1]
           if trick[1][1][1] != suit:
             if suit not in opponent_cuts:
@@ -141,7 +97,7 @@ def aquire_knowledge(state):
                   draw_deck.append([num, suit])
                   remaining_cards.remove([num, suit])
       if p[1][0] == 5:
-        if p[0] == other_player(state["player"]):
+        if p[0] == other_player(state["current_player"]):
           for cut in opponent_cuts:
             if cut not in opponent_max_one:
               opponent_max_one.append(cut)
@@ -151,24 +107,29 @@ def aquire_knowledge(state):
           opponent_hand = []
           remaining_cards += draw_deck
           draw_deck = []
-        else:
-          if p[2] in draw_deck:
-            draw_deck.remove(p[2])
+        # else:
+        #   if p[2] in draw_deck: # PB A VENIR !!!!
+        #     draw_deck.remove(p[2])
         next_special = True
       if p[1][0] == 3:
-        if p[0] == other_player(state["player"]):
-          opponent_hand.append(p[2])
+        # if p[0] == other_player(state["current_player"]):
+          # opponent_hand.append(p[2])
         next_special = True
   remaining_cards = [c for c in remaining_cards if c not in draw_deck]
   for cut in opponent_cuts:
     draw_deck += [c for c in remaining_cards if c[1] == cut]
     remaining_cards = [c for c in remaining_cards if c[1] != cut]
-
+  
+  special_type = None
+  if next_special:
+    special_type = state["plays"][-1][1][0]
+  
   return {
     "remaining_cards": remaining_cards,
     "draw_deck": draw_deck,
     "opponent_hand": opponent_hand,
-    "opponent_max_one": opponent_max_one
+    "opponent_max_one": opponent_max_one,
+    "special_type": special_type
   }
 
 def random_state(state, knowledge):
@@ -179,7 +140,7 @@ def random_state(state, knowledge):
   opponent_hand = [c for c in knowledge["opponent_hand"]]
   opponent_max_one = [c for c in knowledge["opponent_max_one"]]
   shuffle(remaining_cards)
-  nbr_unknown_cards_opp_hand = s["hands"][other_player(s["current_player"])] - len(opponent_hand)
+  nbr_unknown_cards_opp_hand = len(s["hands"][other_player(s["current_player"])]) - len(opponent_hand)
   for _ in range(nbr_unknown_cards_opp_hand):
     opponent_hand += pick_cards(remaining_cards, 1)
     if opponent_hand[-1][1] in opponent_max_one:
@@ -187,12 +148,13 @@ def random_state(state, knowledge):
       draw_deck += [c for c in remaining_cards if c[1] == opponent_hand[-1][1]]
       remaining_cards = [c for c in remaining_cards if c[1] != opponent_hand[-1][1]]
   s["hands"][other_player(s["current_player"])] = opponent_hand
-  s["private_discards"][other_player(s["current_player"])] = pick_cards(remaining_cards, s["private_discards"][other_player(s["current_player"])])
+  s["private_discards"][other_player(s["current_player"])] = pick_cards(remaining_cards, len(s["private_discards"][other_player(s["current_player"])]))
   s["draw_deck"] = draw_deck + remaining_cards
   return s
 
 def select(node, state, ai_player):
   """ Select one of the allowed children based on UCT calculation """
+  # state = get_game_state(game)
   allowed = list_allowed(state, state["current_player"])
   shuffle(allowed)
   list_children = []
@@ -231,8 +193,10 @@ def select(node, state, ai_player):
           selected = n
   return selected
 
-def select_play(state, runs):
+def select_play(game, runs):
   """ Select one play based on MCTS simulations """
+  game = copy_game(game)
+  state = get_state_from_game(game)
   allowed = list_allowed(state, state["current_player"])
   if len(allowed) == 1:
     return allowed[0]
@@ -243,9 +207,12 @@ def select_play(state, runs):
   for _ in range(runs):
     s = random_state(state, k)
     node = root
+    special_type = k["special_type"]
     while len(s["hands"][0]) != 0 or len(s["hands"][1]) != 0:
       node = select(node, s, player)
-      play(s, node.play)
+      s, special_type = do_step(s, node.play, special_type)
+      # game = play(game, node.play)
+      # s = get_state_from_game(game)
     while node.parent != None:
       node.visits += 1
       tricks_won = len(s["discards"][0])//2
@@ -276,6 +243,6 @@ def select_play(state, runs):
 
   return selected.play
 
-def ia_play(state):
+def ia_play(game):
   """ Select a play and return it """
-  return select_play(state, NB_SIMUL_P0)
+  return select_play(game, NB_SIMUL_P0)

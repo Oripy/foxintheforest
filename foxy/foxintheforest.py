@@ -49,6 +49,7 @@ def copy_state(state):
         "score": [state["score"][0], state["score"][1]],
         "discards": [state["discards"][0].copy(), state["discards"][1].copy()],
         "hands": [state["hands"][0].copy(), state["hands"][1].copy()],
+        "init_trump_card": state["init_trump_card"],
         "trump_card": state["trump_card"],
         "draw_deck": state["draw_deck"].copy()
     }
@@ -63,6 +64,7 @@ def get_state_from_game(game):
     state["score"] = [0, 0]
     state["discards"] = [[], []]
     state["hands"] = [game["init_hands"][0].copy(), game["init_hands"][1].copy()]
+    state["init_trump_card"] = game["init_trump_card"]
     state["trump_card"] = game["init_trump_card"]
     state["draw_deck"] = game["init_draw_deck"].copy()
     special_type = None

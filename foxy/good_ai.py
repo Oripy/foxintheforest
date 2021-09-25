@@ -64,6 +64,7 @@ def aquire_knowledge(state):
   opponent_cuts = []
   opponent_max_one = []
 
+  trump_card = state['init_trump_card']
   trick = []
   next_special = False
   for p in state["plays"]:
@@ -75,6 +76,8 @@ def aquire_knowledge(state):
     elif p[1] in remaining_cards:
       remaining_cards.remove(p[1])
     if next_special:
+      if next_special == 3:
+        trump_card = p[1]
       next_special = False
     else:
       if len(trick) == 2:
@@ -107,14 +110,11 @@ def aquire_knowledge(state):
           opponent_hand = []
           remaining_cards += draw_deck
           draw_deck = []
-        # else:
-        #   if p[2] in draw_deck: # PB A VENIR !!!!
-        #     draw_deck.remove(p[2])
-        next_special = True
+        next_special = 5
       if p[1][0] == 3:
-        # if p[0] == other_player(state["current_player"]):
-          # opponent_hand.append(p[2])
-        next_special = True
+        if p[0] == other_player(state["current_player"]):
+          opponent_hand.append(trump_card)
+        next_special = 3
   remaining_cards = [c for c in remaining_cards if c not in draw_deck]
   for cut in opponent_cuts:
     draw_deck += [c for c in remaining_cards if c[1] == cut]
@@ -195,7 +195,7 @@ def select(node, state, ai_player):
 
 def select_play(game, runs):
   """ Select one play based on MCTS simulations """
-  game = copy_game(game)
+  # game = copy_game(game)
   state = get_state_from_game(game)
   allowed = list_allowed(state, state["current_player"])
   if len(allowed) == 1:
@@ -211,8 +211,6 @@ def select_play(game, runs):
     while len(s["hands"][0]) != 0 or len(s["hands"][1]) != 0:
       node = select(node, s, player)
       s, special_type = do_step(s, node.play, special_type)
-      # game = play(game, node.play)
-      # s = get_state_from_game(game)
     while node.parent != None:
       node.visits += 1
       tricks_won = len(s["discards"][0])//2

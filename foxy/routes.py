@@ -126,9 +126,9 @@ def play():
         flash(f'You are not a player in this game.', 'danger')
         return redirect(url_for('lobby'))
 
-@app.route("/state", methods=["POST"])
+@app.route("/get_game", methods=["POST"])
 @login_required
-def state():
+def get_game():
     req = request.get_json()
     game_id = req["id"]
     game = Games.query.filter_by(id=game_id).first()

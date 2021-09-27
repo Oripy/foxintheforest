@@ -6,7 +6,6 @@ from flask_login import login_user, logout_user, current_user, login_required
 import foxy.foxintheforest as foxintheforest
 import foxy.random_ai as random_ai
 import foxy.good_ai as good_ai
-import random
 
 AI_dict = {"TheBad": random_ai, "TheGood": good_ai} 
 
@@ -140,19 +139,19 @@ def get_game():
         if game.second_player.username in AI_dict.keys():
             state = foxintheforest.get_state_from_game(gameState)
             if state["current_player"] == 1:
-                ai_play = AI_dict[game.second_player.username].ia_play(foxintheforest.get_state_from_game(foxintheforest.get_player_game(gameState, 1)))
-                game = foxintheforest.play(gameState, ai_play)
-                state = foxintheforest.get_state_from_game(game)
+                ai_play = AI_dict[game.second_player.username].ia_play(foxintheforest.get_player_game(gameState, 1))
+                gameState = foxintheforest.play(gameState, ai_play)
+                state = foxintheforest.get_state_from_game(gameState)
                 if len(state["discards"][0]) + len(state["discards"][1]) == 26:
                     game.status = 2
-                game.game = json.dumps(game)
+                game.game = json.dumps(gameState)
                 db.session.commit()
     if game.first_player_id == current_user.id:
-        game = json.loads(game.game)
-        return make_response(jsonify(foxintheforest.get_player_game(game, 0)), 200)
+        gameState = json.loads(game.game)
+        return make_response(jsonify(foxintheforest.get_player_game(gameState, 0)), 200)
     elif game.second_player_id == current_user.id:
-        game = json.loads(game.game)
-        return make_response(jsonify(foxintheforest.get_player_game(game, 1)), 200)
+        gameState = json.loads(game.game)
+        return make_response(jsonify(foxintheforest.get_player_game(gameState, 1)), 200)
     else:
         flash(f'You are not a player in this game.', 'danger')
         return redirect(url_for('lobby'))

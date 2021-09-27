@@ -1,5 +1,6 @@
-from foxy.foxintheforest import list_allowed
+from foxy.foxintheforest import list_allowed, get_state_from_game
 from random import choice
 
-def ia_play(state):
+def ia_play(game):
+    state = get_state_from_game(game)
     return choice(list_allowed(state, 1))

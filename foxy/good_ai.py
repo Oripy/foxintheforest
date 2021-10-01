@@ -54,6 +54,9 @@ class Node():
   
   def graph(self, depth=1):
     """ outputs a Graphviz DOT language representation of the tree """
+    sum = self.outcome_p0["humble"] + self.outcome_p0["defeated"] + self.outcome_p0["victorious"] + self.outcome_p0["greedy"]
+    if sum == 0:
+      sum = 1
     text = ""
     text += f'self.id() [label=\"{self.play[0]}:{self.play[1][0]}{self.play[1][1]} V:{(self.outcome_p0["victorious"]+self.outcome_p0["humble"])/sum*100:.2f}\"];\n'
     for node in self.children:

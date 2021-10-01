@@ -58,7 +58,7 @@ class Node():
     if sum == 0:
       sum = 1
     text = ""
-    text += f'id(self) [label=\"{self.play[0]}:{self.play[1][0]}{self.play[1][1]} V:{(self.outcome_p0["victorious"]+self.outcome_p0["humble"])/sum*100:.2f}\"];\n'
+    text += f'{id(self)} [label=\"{self.play[0]}:{self.play[1][0]}{self.play[1][1]} V:{(self.outcome_p0["victorious"]+self.outcome_p0["humble"])/sum*100:.2f}\"];\n'
     for node in self.children:
       text += f"{id(self)} -- {id(node)};"
     print(text)

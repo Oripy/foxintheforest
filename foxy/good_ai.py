@@ -58,9 +58,9 @@ class Node():
     if sum == 0:
       sum = 1
     text = ""
-    text += f'self.id() [label=\"{self.play[0]}:{self.play[1][0]}{self.play[1][1]} V:{(self.outcome_p0["victorious"]+self.outcome_p0["humble"])/sum*100:.2f}\"];\n'
+    text += f'id(self) [label=\"{self.play[0]}:{self.play[1][0]}{self.play[1][1]} V:{(self.outcome_p0["victorious"]+self.outcome_p0["humble"])/sum*100:.2f}\"];\n'
     for node in self.children:
-      text += f"{self.id()} -- {node.id()};\n"
+      text += f"{id(self)} -- {id(node)};\n"
     print(text)
     if depth > 0:
       for c in sorted(self.children, key=lambda a:a.visits, reverse=True):

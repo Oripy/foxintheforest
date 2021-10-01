@@ -52,6 +52,17 @@ class Node():
       for c in sorted(self.children, key=lambda a:a.visits, reverse=True):
         c.show(indent=indent+1, depth=depth-1)
   
+  def graph(self, depth=1):
+    """ outputs a Graphviz DOT language representation of the tree """
+    text = ""
+    text += f"self.id() [label=\"{self.play[0]}:{self.play[1][0]}{self.play[1][1]} V:{(self.outcome_p0["victorious"]+self.outcome_p0["humble"])/sum*100:.2f}\"];\n"
+    for node in self.children:
+      text += f"{self.id()} -- {node.id()};\n"
+    print(text)
+    if depth > 0:
+      for c in sorted(self.children, key=lambda a:a.visits, reverse=True):
+        c.graph(depth=depth-1)
+  
 def UCT(node):
   """ output Upper Confidence Bound formula result for the given node """
   return node.reward / node.visits + K * sqrt(log(node.availability) / node.visits)

@@ -261,6 +261,6 @@ def select_play(game, runs):
   # f.close()
   return selected.play
 
-def ia_play(game):
+def ai_play(game):
   """ Select a play and return it """
   return select_play(game, NB_SIMUL_P0)

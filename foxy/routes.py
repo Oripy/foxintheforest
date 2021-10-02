@@ -20,9 +20,9 @@ def new():
     game = foxintheforest.new_game()
     game = json.dumps(game)
     if 'IA' in request.form:
-        ia = User.query.filter_by(username=request.form['IA']).first()
-        if ia:
-            game_db = Games(game=game, name=request.form['gamename'], first_player_id=current_user.id, second_player_id=ia.id, status=1)
+        ai = User.query.filter_by(username=request.form['IA']).first()
+        if ai:
+            game_db = Games(game=game, name=request.form['gamename'], first_player_id=current_user.id, second_player_id=ai.id, status=1)
         else:
             flash(f'This IA does not exists.', 'danger')
             return redirect(url_for('lobby'))
@@ -139,7 +139,7 @@ def get_game():
         if game.second_player.username in AI_dict.keys():
             state = foxintheforest.get_state_from_game(gameState)
             if state["current_player"] == 1:
-                ai_play = AI_dict[game.second_player.username].ia_play(foxintheforest.get_player_game(gameState, 1))
+                ai_play = AI_dict[game.second_player.username].ai_play(foxintheforest.get_player_game(gameState, 1))
                 gameState = foxintheforest.play(gameState, ai_play)
                 state = foxintheforest.get_state_from_game(gameState)
                 if len(state["discards"][0]) + len(state["discards"][1]) == 26:

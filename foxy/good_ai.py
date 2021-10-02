@@ -168,9 +168,7 @@ def random_state(state, knowledge):
 
 def select(node, state, ai_player):
   """ Select one of the allowed children based on UCT calculation """
-  # state = get_game_state(game)
   allowed = list_allowed(state, state["current_player"])
-  shuffle(allowed)
   list_children = []
   for p in allowed:
     exists = False

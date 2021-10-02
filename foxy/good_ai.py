@@ -1,4 +1,4 @@
-from foxy.foxintheforest import copy_game, copy_state, do_step, pick_cards, other_player, get_state_from_game, list_allowed, CARDS, COLORS
+from foxy.foxintheforest import copy_state, do_step, pick_cards, other_player, get_state_from_game, list_allowed, CARDS
 from random import shuffle
 from math import sqrt, log
 
@@ -58,13 +58,16 @@ class Node():
     if sum == 0:
       sum = 1
     text = ""
-    text += f'{id(self)} [label=\"{self.play[0]}:{self.play[1][0]}{self.play[1][1]} V:{(self.outcome_p0["victorious"]+self.outcome_p0["humble"])/sum*100:.2f}\"];\n'
+    if self.play:
+      text += f'{id(self)} [label="{self.play[0]}:{self.play[1][0]}{self.play[1][1]} V:{(self.outcome_p0["victorious"]+self.outcome_p0["humble"])/sum*100:.2f}"];\n'
+    else:
+      text += f'{id(self)} [label="root V:{(self.outcome_p0["victorious"]+self.outcome_p0["humble"])/sum*100:.2f}"];\n'
     for node in self.children:
-      text += f"{id(self)} -- {id(node)};"
-    print(text)
+      text += f"{id(self)} -- {id(node)};\n"
     if depth > 0:
       for c in sorted(self.children, key=lambda a:a.visits, reverse=True):
-        c.graph(depth=depth-1)
+        text += c.graph(depth=depth-1)
+    return text
   
 def UCT(node):
   """ output Upper Confidence Bound formula result for the given node """
@@ -251,6 +254,11 @@ def select_play(game, runs):
       selected = n
       maxi = n.visits
 
+  # f = open(f'{(len(state["discards"][0])+len(state["discards"][1]))//2} {id(root)}.dot', "w")
+  # f.write("graph {")
+  # f.write(root.graph(5))
+  # f.write("}")
+  # f.close()
   return selected.play
 
 def ia_play(game):

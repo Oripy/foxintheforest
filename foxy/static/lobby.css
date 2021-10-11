@@ -8,6 +8,7 @@
       "list1 list2";
   gap: 10px;
   justify-items: center;
+  height: calc(100% - 70px);
 }
 
 @media (max-width: 768px) {
@@ -27,8 +28,12 @@
 
 .gamelist1 {
   grid-area: list1;
+  justify-self: stretch;
+  overflow-y: scroll;
 }
 
 .gamelist2 {
   grid-area: list2;
+  justify-self: stretch;
+  overflow-y: scroll;
 }

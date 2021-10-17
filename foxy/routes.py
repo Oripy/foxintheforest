@@ -19,12 +19,12 @@ def main():
 def new():
     game = foxintheforest.new_game()
     game = json.dumps(game)
-    if 'IA' in request.form:
-        ai = User.query.filter_by(username=request.form['IA']).first()
+    if 'AI' in request.form:
+        ai = User.query.filter_by(username=request.form['AI']).first()
         if ai:
             game_db = Games(game=game, name=request.form['gamename'], first_player_id=current_user.id, second_player_id=ai.id, status=1)
         else:
-            flash(f'This IA does not exists.', 'danger')
+            flash(f'This AI does not exists.', 'danger')
             return redirect(url_for('lobby'))
     else:
         game_db = Games(game=game, name=request.form['gamename'], first_player_id=current_user.id)

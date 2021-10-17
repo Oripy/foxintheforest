@@ -10,12 +10,12 @@
       <input type="submit" class="btn btn-primary" value="Create New Game">
     </form>
     <form action="{{ url_for('new') }}" method="post">
-      <input type="hidden" name="IA" value="TheBad">
+      <input type="hidden" name="AI" value="TheBad">
       <input type="hidden" name="gamename" value="Game against TheBad">
       <input type="submit" class="btn btn-primary" value="New Game against TheBad">
     </form>
     <form action="{{ url_for('new') }}" method="post">
-      <input type="hidden" name="IA" value="TheGood">
+      <input type="hidden" name="AI" value="TheGood">
       <input type="hidden" name="gamename" value="Game against TheGood">
       <input type="submit" class="btn btn-primary" value="New Game against TheGood">
     </form>

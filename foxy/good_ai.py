@@ -213,7 +213,9 @@ def select_play(game, runs):
   # game = copy_game(game)
   state = get_state_from_game(game)
   allowed = list_allowed(state, state["current_player"])
-  if len(allowed) == 1:
+  if len(allowed) == 0:
+    return False
+  elif len(allowed) == 1:
     return allowed[0]
 
   root = Node(None)

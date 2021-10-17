@@ -37,13 +37,13 @@
 #playerhand
 {
     text-align: center;
-	grid-area: playerhand;
+	grid-area: playerinfo / playerinfo / playerhand / playerhand;
 }
 
 #opponenthand
 {
     text-align: center;
-	grid-area: opponenthand;
+	grid-area: opponentinfo / opponentinfo / opponenthand / opponenthand;
 }
 
 #decks

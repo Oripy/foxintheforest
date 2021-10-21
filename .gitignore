@@ -136,3 +136,7 @@ dmypy.json
 
 # App specific
 *.db
+
+# linter config
+.eslintrc.js
+pylintrc

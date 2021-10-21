@@ -170,6 +170,7 @@ a {
   width: 100%;
   padding-top: 10px 0 10px;
   margin: 0;
+  transition: transform 2s, opacity 2s;
 }
 .alert.danger {
   background-color: #ca4242;

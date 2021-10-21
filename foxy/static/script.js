@@ -1,54 +1,161 @@
 const urlParams = new URLSearchParams(window.location.search);
+const url = new URL(window.location);
+const socket = io();
 
 const suitHTML = {'h': ['&hearts;', 'red'],
                   's': ['&spades;', 'black'],
                   'c': ['&clubs;', 'green']};
 
 let game_id = urlParams.get('id');
+let current_plays = 0;
+let current_game;
+if (urlParams.has('play')) {
+  current_plays = urlParams.get('play');
+}
 let player = -1;
-let current_plays = [];
 
-setTimeout(refresh, 1000);
-// //////////////////////////////////////////////
-// let button = document.createElement("button");
-// button.innerHTML = "Step";
-// let decks = document.getElementById("decks");
-// decks.appendChild(button);
-// button.addEventListener("click", refresh);
-// //////////////////////////////////////////////
+window.onpopstate = (event) => {
+  current_plays = event.state['play'];
+  console.log(current_plays);
+  showState(current_game);
+};
 
-function refresh() {
-  console.log("refresh")
-  fetch(`/get_game`, {
-    method: "POST",
-    credentials: "include",
-    body: JSON.stringify({id: game_id}),
-    cache: "no-cache",
-    headers: new Headers({
-      "content-type": "application/json"
-    })
-  }).then((response) => {
-    if (response.status !== 200) {
-      console.log(`Looks like there was a problem. Status code: ${response.status}`);
-      return;
-    }
-    response.json().then(async (game) => {
-      await updateState(game);
-      setTimeout(refresh, 1000);
-    });
+socket.on('connect', () => socket.emit('get game', JSON.stringify({id: game_id})));
+socket.on('error', (error) => console.error('SocketIO error ', error));
+socket.on('game', (game) => showState(JSON.parse(game)));
+socket.on('game state', (game) => Queue.enqueue(() => updateState(JSON.parse(game))));
+socket.on('message', (data) => showMessage(JSON.parse(data).text, JSON.parse(data).category));
+
+document.getElementById("playerhand").addEventListener("click", playCard);
+
+function showMessage(text, category) {
+  let message_div = document.getElementById("messages");
+  let message = document.createElement("div");
+  message.classList.add("alert", category);
+  message.innerHTML = text;
+  message_div.appendChild(message);
+  setTimeout(() => {
+    message.addEventListener("transitionend", (e) => e.currentTarget.remove());
+    message.style.transform = `translate(0px, ${message.clientHeight}px)`;
+    message.style.opacity = 0;
+  }, 4000);
+}
+
+function removeCardFromHand(hand, card) {
+  return hand.filter(function(c){ 
+    return (c[0] != card[0] || c[1] != card[1]); 
   });
+}
+
+function showState(game) {
+  console.log(game);
+  player = parseInt(game.player);
+  current_game = game;
+  let trump_card = game.init_trump_card;
+  let player_hand = [...game.init_hands[player]];
+  let opponent_hand = [...game.init_hands[1 - player]];
+  let deck = [...game.init_draw_deck];
+  let special = false;
+  let trick = [];
+
+  current_plays = Math.min(game.plays.length, current_plays);
+  document.getElementById("playerscore").innerHTML = 0;
+  document.getElementById("opponentscore").innerHTML = 0;
+  
+  for (let play of game.plays.slice(0, current_plays)) {
+    console.log(play);
+    if (play[0] === player) {
+      switch (special) {
+        case false:
+          player_hand = removeCardFromHand(player_hand, play[1]);
+          trick.push(play);
+          if (play[1][0] == 3) {
+            player_hand.push(trump_card);
+            trump_card = null;
+            special = 3;
+          } else if (play[1][0] == 5) {
+            player_hand.push(deck[0]);
+            deck.shift();
+            special = 5;
+          }
+          break;
+        case 3:
+          special = false;
+          player_hand = removeCardFromHand(player_hand, play[1]);
+          trump_card = play[1];
+          break;
+        case 5:
+          special = false;
+          player_hand = removeCardFromHand(player_hand, play[1]);
+          break;
+      }
+    } else {
+      switch (special) {
+        case false:
+          opponent_hand.pop();
+          trick.push(play);
+          if (play[1][0] == 3) {
+            opponent_hand.push([null, null]);
+            trump_card = null;
+            special = 3;
+          } else if (play[1][0] == 5) {
+            opponent_hand.push([null, null]);
+            special = 5;
+          }
+          break;
+        case 3:
+          special = false;
+          opponent_hand.pop();
+          trump_card = play[1];
+          break;
+        case 5:
+          special = false;
+          opponent_hand.pop();
+          break;
+      }
+    }
+    if (trick.length >= 2 && !special) {
+      let cardp0 = (trick[0][0] == 0) ? trick[0][1] : trick[1][1];
+      let cardp1 = (trick[0][0] == 1) ? trick[0][1] : trick[1][1];
+      let winner = trickwinner(trick[0][0], cardp0, cardp1, trump_card);
+      if (winner == player) {
+        document.getElementById("playerscore").innerHTML++;
+      } else {
+        document.getElementById("opponentscore").innerHTML++;
+      }
+      trick = [];
+    }
+  }
+  setTrumpCard(trump_card);
+  setPlayerHand(player_hand);
+  sortPlayerHand();
+  setOpponentHand(opponent_hand);
+  document.getElementById('pt').replaceWith(getCard('empty', 'pt'));
+  document.getElementById('ot').replaceWith(getCard('empty', 'ot'));
+  for (let p of trick) {
+    if (p[0] == player) {
+      document.getElementById('pt').replaceWith(getCard(p[1], 'pt'));
+    } else {
+      document.getElementById('ot').replaceWith(getCard(p[1], 'ot'));
+    }
+  }
+  
+  if (game.plays.length > current_plays) {
+    Queue.enqueue(() => updateState(game));
+  }
 }
 
 async function updateState(game) {
   console.log(game);
-  player = parseInt(game.player);
+  current_game = game;
+  // player = parseInt(game.player);
 
-  if (current_plays.length == 0) {
-    await setTrumpCard(game.init_trump_card);
-    await setPlayerHand(game.init_hands[player]);
-    sortPlayerHand();
-    await setOpponentHand(game.init_hands[1 - player]);
-  }
+  // if (current_plays == 0) {
+  //   await setTrumpCard(game.init_trump_card);
+  //   await setPlayerHand(game.init_hands[player]);
+  //   await setOpponentHand(game.init_hands[1 - player]);
+  //   sortPlayerHand();
+  // }
   let trump_card = game.init_trump_card;
   let special = false;
   let nbr_cards_drawn = 0;
@@ -56,11 +163,14 @@ async function updateState(game) {
   
   for (let [index, play] of game.plays.entries()) {
     let animate = false;
-    if (index >= current_plays.length) {
+    if (index >= current_plays) {
       animate = true;
-      current_plays.push(play);
+      current_plays++;
+      urlParams.set('play', current_plays);
+      url.searchParams.set('play', current_plays);
+      history.pushState({'play': current_plays}, '', url);
     }
-    if (play[0] === 0) {
+    if (play[0] === player) {
       switch (special) {
         case false:
           if (animate) await playerPlayCard(play[1]);
@@ -160,39 +270,34 @@ function IdToCard(id) {
 }
 
 function playCard(event) {
-  if ((window.matchMedia("(hover: hover)").matches) || (event.target.classList.contains("sel"))) {
-    let card_id = event.target.id;
-    fetch(`/play`, {
-      method: "POST",
-      credentials: "include",
-      body: JSON.stringify({id: game_id, play: card_id, player: player}), // player not defined
-      cache: "no-cache",
-      headers: new Headers({
-        "content-type": "application/json"
-      })
-    }).then((response) => {
-      if (response.status !== 200) {
-        console.log(`Looks like there was a problem. Status code: ${response.status}`);
-        return;
+  if (event.target && event.target.matches(".playingcard")) {
+    if ((window.matchMedia("(hover: hover)").matches) || (event.target.classList.contains("sel"))) {
+      let card_id = event.target.id;
+      socket.emit("play", JSON.stringify({id: game_id, play: card_id, player: player}))
+      if (window.matchMedia("(hover: none)").matches) {
+        let value = parseInt(event.target.id.slice(0, -1));
+        if ([1,3,5,7,9,11].includes(value)) {
+          let helpdiv = document.getElementById("help"+value);
+          console.log(helpdiv);
+          helpdiv.classList.add("hidden");
+        }
       }
-      response.json().then((res) => {
-        // updateState(res);
-      });
-    }); //.then(playerPlayCard(event.target.id));
-  }
-  if (window.matchMedia("(hover: none)").matches) {
-    if ([1,3,5,7,9,11].includes(hand[i][0])) {
-      helpdiv = document.getElementById("help"+hand[i][0]);
-      helpdiv.classList.remove("hidden");
     }
-    event.target.classList.toggle("sel");
+    else if (window.matchMedia("(hover: none)").matches) {
+      let value = parseInt(event.target.id.slice(0, -1));
+      if ([1,3,5,7,9,11].includes(value)) {
+        let helpdiv = document.getElementById("help"+value);
+        helpdiv.classList.remove("hidden");
+      }
+      event.target.classList.toggle("sel");
+    }
   }
 }
 
 async function moveCard(card, start, target, stay=false, replace=false, remove_start=false) {
   let start_position = start.getBoundingClientRect();
   if (remove_start) {
-    start.parentNode.removeChild(start);
+    start.remove();
   }
   let anim = card.cloneNode(true);
 
@@ -218,7 +323,7 @@ async function moveCard(card, start, target, stay=false, replace=false, remove_s
       if (replace) {
         target.replaceWith(card);
       }
-      anim.parentNode.removeChild(anim);
+      anim.remove();
       anim.removeEventListener('transitionend', onTransitionEndCb);
       resolve('resolved');
     }
@@ -256,20 +361,20 @@ function getCard(card, id=undefined) {
   return div;
 }
 
-async function setTrumpCard(trump_card) {
+function setTrumpCard(trump_card) {
   let trump = document.getElementById("trump").children[0];
-  let deck = document.getElementById("deck");
   if (trump_card != null) {
-    id = trump_card[0] + trump_card[1];
+    let id = cardToId(trump_card);
     if (trump.id != id) {
-      await moveCard(getCard(trump_card, id), deck, trump, stay=false, replace=true);
+      console.log(id, getCard(trump_card, id));
+      trump.replaceWith(getCard(trump_card, id));
     }
   } else {
-    trump = getCard("empty", "empty");
+    trump.replaceWith(getCard("empty", "empty"));
   }
 }
 
-async function setOpponentHand(hand) {
+function setOpponentHand(hand) {
   let opponenthand = document.getElementById("opponenthand");
   let children = opponenthand.children;
   if (children.length > hand.length) {
@@ -280,24 +385,18 @@ async function setOpponentHand(hand) {
   if (children.length < hand.length) { 
     for (let i = children.length; i < hand.length; i++) {
       let card = getCard("back");
-      if (i == hand.length-1) {
-        await moveCard(card, deck, opponenthand, stay=true);
-      } else {
-        moveCard(card, deck, opponenthand, stay=true);
-      }
+      opponenthand.appendChild(card);
     }
   }
 }
 
-async function setPlayerHand(hand) {
+function setPlayerHand(hand) {
   let playerhand = document.getElementById("playerhand");
-  let deck = document.getElementById("deck");
 
   let children = playerhand.children;
   let list_ids = [];
   for (let i = 0; i < hand.length; i++) {
-    let id = hand[i][0] + hand[i][1];
-    list_ids.push(id);
+    list_ids.push(cardToId(hand[i]));
   }
   for (let i = 0; i < children.length; i++) {
     if (list_ids.includes(children[i].id)) {
@@ -311,12 +410,7 @@ async function setPlayerHand(hand) {
     if (list_ids.includes(id)) {
       let card = getCard(hand[i], id);
       card.classList.add("selectable");
-      card.addEventListener("click", playCard);
-      if (i == hand.length-1) {
-        await moveCard(card, deck, playerhand, stay=true);
-      } else {
-        moveCard(card, deck, playerhand, stay=true);
-      }
+      playerhand.appendChild(card);
     }
   }
 }
@@ -348,17 +442,16 @@ async function sortPlayerHand() {
 async function playerPlayCard(c) {
   let target = document.getElementById("pt");
   let card = document.getElementById(cardToId(c));
-  await moveCard(card, card, target, stay=false, replace=true, remove_start=true);
+  await moveCard(card, card, target, false, true, true);
   card.id = "pt";
   card.classList.remove("selectable");
-  card.removeEventListener("click", playCard);
 }
 
 async function opponentPlayCard(c) {
   let hand = document.getElementById("opponenthand").children[0];
   let target = document.getElementById("ot");
   let card = getCard(c, cardToId(c));
-  await moveCard(card, hand, target, stay=false, replace=true, remove_start=true);
+  await moveCard(card, hand, target, false, true, true);
   card.id = "ot";
   hand.removeChild(hand.children[0]);
 }
@@ -368,28 +461,27 @@ async function playerDrawCard(c) {
   let deck = document.getElementById("deck");
   let card = getCard(c, cardToId(c));
   card.classList.add("selectable");
-  card.addEventListener("click", playCard);
-  await moveCard(card, deck, playerhand, stay=true);
+  await moveCard(card, deck, playerhand, true);
 }
 
 async function opponentDrawCard() {
   let opponenthand = document.getElementById("opponenthand");
   let deck = document.getElementById("deck");
   let card = getCard("back");
-  await moveCard(card, deck, opponenthand, stay=true);
+  await moveCard(card, deck, opponenthand, true);
 }
 
 async function playerDiscardCard(c) {
   let target = document.getElementById("deck");
   let card = document.getElementById(cardToId(c));
-  await moveCard(card, card, target, stay=false, replace=false, remove_start=true);
+  await moveCard(card, card, target, false, false, true);
 }
 
 async function opponentDiscardCard() {
-  // let opponenthand = document.getElementById("opponenthand").children[0];
+  let opponentcard = document.getElementById("opponenthand").children[0];
   let deck = document.getElementById("deck");
   let card = getCard("back");
-  await moveCard(card, card, deck, stay=false, replace=false, remove_start=true);
+  await moveCard(card, opponentcard, deck, false, false, true);
 }
 
 async function playerDrawTrump() {
@@ -398,8 +490,7 @@ async function playerDrawTrump() {
   let c =  IdToCard(trump.id);
   let card = getCard(c, cardToId(c));
   card.classList.add("selectable");
-  card.addEventListener("click", playCard);
-  await moveCard(card, trump, playerhand, stay=true);
+  await moveCard(card, trump, playerhand, true);
   trump.replaceWith(getCard("empty", "empty"));
 }
 
@@ -407,7 +498,7 @@ async function opponentDrawTrump() {
   let opponenthand = document.getElementById("opponenthand");
   let trump = document.getElementById("trump").children[0];
   let card = getCard("back");
-  await moveCard(card, trump, opponenthand, stay=true);
+  await moveCard(card, trump, opponenthand, true);
   trump.replaceWith(getCard("empty", "empty"));
 }
 
@@ -415,17 +506,18 @@ async function playerPlayTrump(c) {
   let source = document.getElementById(cardToId(c));
   let trump = document.getElementById("trump").children[0];
   let card = getCard(c, cardToId(c));
-  await moveCard(card, source, trump, stay=false, replace=true, remove_start=true);
+  await moveCard(card, source, trump, false, true, true);
 }
 
 async function opponentPlayTrump(c) {
   let hand = document.getElementById("opponenthand").children[0];
   let trump = document.getElementById("trump").children[0];
   let card = getCard(c, cardToId(c));
-  await moveCard(card, hand, trump, stay=false, replace=true, remove_start=true);
+  await moveCard(card, hand, trump, false, true, true);
 }
 
 async function clearTrick(winner) {
+  let target;
   if (winner == player) {
     target = document.getElementById("playername");
   } else {
@@ -451,10 +543,25 @@ if (window.matchMedia("(hover: none)").matches) {
       if (! selected_cards[i].contains(event.target)) {
         let value = parseInt(selected_cards[i].id.slice(0, -1));
         if ([1,3,5,7,9,11].includes(value)) {
-          helpdiv = document.getElementById("help"+value);
+          let helpdiv = document.getElementById("help"+value);
           helpdiv.classList.add("hidden");
         }
         selected_cards[i].classList.remove("sel");
+      }
+    }
+  });
+}
+
+if (window.matchMedia("(hover: hover)").matches) {
+  document.addEventListener("mouseover", (event) => {
+    if (event.target.classList.contains("playingcard")) {
+      let value = parseInt(event.target.id.slice(0, -1));
+      if ([1,3,5,7,9,11].includes(value)) {
+        let helpdiv = document.getElementById("help"+value);
+        helpdiv.classList.remove("hidden");
+        event.target.addEventListener("mouseleave", () => {
+          helpdiv.classList.add("hidden");
+        }, {once: true});
       }
     }
   });

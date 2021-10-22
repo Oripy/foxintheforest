@@ -7,7 +7,7 @@ const suitHTML = {'h': ['&hearts;', 'red'],
                   'c': ['&clubs;', 'green']};
 
 let game_id = urlParams.get('id');
-let current_plays = 0;
+let current_plays = -1;
 let current_game;
 if (urlParams.has('play')) {
   current_plays = urlParams.get('play');
@@ -16,17 +16,26 @@ let player = -1;
 
 window.onpopstate = (event) => {
   current_plays = event.state['play'];
-  console.log(current_plays);
-  showState(current_game);
+  Queue.enqueue(() => showState(current_game));
 };
 
 socket.on('connect', () => socket.emit('get game', JSON.stringify({id: game_id})));
 socket.on('error', (error) => console.error('SocketIO error ', error));
-socket.on('game', (game) => showState(JSON.parse(game)));
+socket.on('game', (game) => Queue.enqueue(() => showState(JSON.parse(game))));
 socket.on('game state', (game) => Queue.enqueue(() => updateState(JSON.parse(game))));
 socket.on('message', (data) => showMessage(JSON.parse(data).text, JSON.parse(data).category));
 
 document.getElementById("playerhand").addEventListener("click", playCard);
+
+function wait(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+function setURL(play) {
+  urlParams.set('play', play);
+  url.searchParams.set('play', play);
+  history.pushState({'play': play}, '', url);
+}
 
 function showMessage(text, category) {
   let message_div = document.getElementById("messages");
@@ -47,7 +56,7 @@ function removeCardFromHand(hand, card) {
   });
 }
 
-function showState(game) {
+async function showState(game) {
   console.log(game);
   player = parseInt(game.player);
   current_game = game;
@@ -59,6 +68,10 @@ function showState(game) {
   let trick = [];
 
   current_plays = Math.min(game.plays.length, current_plays);
+  if (current_plays == -1) {
+    current_plays = game.plays.length;
+  }
+  setURL(current_plays);
   document.getElementById("playerscore").innerHTML = 0;
   document.getElementById("opponentscore").innerHTML = 0;
   
@@ -139,7 +152,7 @@ function showState(game) {
       document.getElementById('ot').replaceWith(getCard(p[1], 'ot'));
     }
   }
-  
+  await wait(1000);
   if (game.plays.length > current_plays) {
     Queue.enqueue(() => updateState(game));
   }
@@ -166,9 +179,7 @@ async function updateState(game) {
     if (index >= current_plays) {
       animate = true;
       current_plays++;
-      urlParams.set('play', current_plays);
-      url.searchParams.set('play', current_plays);
-      history.pushState({'play': current_plays}, '', url);
+      setURL(current_plays);
     }
     if (play[0] === player) {
       switch (special) {

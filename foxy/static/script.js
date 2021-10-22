@@ -24,6 +24,7 @@ socket.on('error', (error) => console.error('SocketIO error ', error));
 socket.on('game', (game) => Queue.enqueue(() => showState(JSON.parse(game))));
 socket.on('game state', (game) => Queue.enqueue(() => updateState(JSON.parse(game))));
 socket.on('message', (data) => showMessage(JSON.parse(data).text, JSON.parse(data).category));
+socket.on('game ended', (data) => Queue.enqueue(() => showResult(JSON.parse(data))));
 
 document.getElementById("playerhand").addEventListener("click", playCard);
 
@@ -76,7 +77,6 @@ async function showState(game) {
   document.getElementById("opponentscore").innerHTML = 0;
   
   for (let play of game.plays.slice(0, current_plays)) {
-    console.log(play);
     if (play[0] === player) {
       switch (special) {
         case false:
@@ -141,6 +141,7 @@ async function showState(game) {
     }
   }
   setTrumpCard(trump_card);
+  console.log(player_hand);
   setPlayerHand(player_hand);
   sortPlayerHand();
   setOpponentHand(opponent_hand);
@@ -160,16 +161,7 @@ async function showState(game) {
 }
 
 async function updateState(game) {
-  console.log(game);
   current_game = game;
-  // player = parseInt(game.player);
-
-  // if (current_plays == 0) {
-  //   await setTrumpCard(game.init_trump_card);
-  //   await setPlayerHand(game.init_hands[player]);
-  //   await setOpponentHand(game.init_hands[1 - player]);
-  //   sortPlayerHand();
-  // }
   let trump_card = game.init_trump_card;
   let special = false;
   let nbr_cards_drawn = 0;
@@ -291,7 +283,6 @@ function playCard(event) {
         let value = parseInt(event.target.id.slice(0, -1));
         if ([1,3,5,7,9,11].includes(value)) {
           let helpdiv = document.getElementById("help"+value);
-          console.log(helpdiv);
           helpdiv.classList.add("hidden");
         }
       }
@@ -379,7 +370,6 @@ function setTrumpCard(trump_card) {
   if (trump_card != null) {
     let id = cardToId(trump_card);
     if (trump.id != id) {
-      console.log(id, getCard(trump_card, id));
       trump.replaceWith(getCard(trump_card, id));
     }
   } else {
@@ -547,6 +537,35 @@ async function clearTrick(winner) {
   } else {
     document.getElementById("opponentscore").innerHTML++;
   }
+}
+
+async function showResult(data) {
+  let score = data["score"];
+  let text = "You ";
+  let diff = score[player] - score[1 - player];
+  if (diff > 0) {
+    text += "WIN";
+  } else if (diff == 0) {
+    text += "DRAW";
+  } else {
+    text += "LOST";
+  }
+  text += `<br>${score[player]} - ${score[1 - player]}`
+
+  let num_ply = data["discards"][player].length/2;
+  if (num_ply <= 3) {
+    text += '<br>Humble';
+  } else if (num_ply <= 6) {
+    text += '<br>Defeated';
+  } else if (num_ply <= 9) {
+    text += '<br>Victorious';
+  } else {
+    text += '<br>Greedy';
+  } 
+  // let el = document.getElementById("message");
+  document.getElementById("messagecontent").innerHTML = text;
+  document.getElementById("message").classList.remove("invisible");
+  await wait(100);
 }
 
 if (window.matchMedia("(hover: none)").matches) {

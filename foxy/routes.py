@@ -11,12 +11,12 @@ from foxy import good_ai
 
 AI_dict = {"TheBad": random_ai, "TheGood": good_ai}
 
-def authenticated_only(f):
+def authenticated_only(func):
     def wrapper(*args, **kwargs):
         if not current_user.is_authenticated:
             disconnect()
             return None
-        return f(*args, **kwargs)
+        return func(*args, **kwargs)
     return wrapper
 
 def flash_io(text, category):
@@ -34,14 +34,14 @@ def new():
     if 'AI' in request.form:
         ai = User.query.filter_by(username=request.form['AI']).first()
         if ai:
-            game_db = Games(game=game_state, name=request.form['gamename'], 
+            game_db = Games(game=game_state, name=request.form['gamename'],
                             first_player_id=current_user.id,
                             second_player_id=ai.id, status=1)
         else:
             flash('This AI does not exists.', 'danger')
             return redirect(url_for('lobby'))
     else:
-        game_db = Games(game=game_state, name=request.form['gamename'], 
+        game_db = Games(game=game_state, name=request.form['gamename'],
                         first_player_id=current_user.id)
     db.session.add(game_db)
     db.session.commit()
@@ -50,22 +50,22 @@ def new():
 @app.route("/game")
 @login_required
 def game():
-    id = request.args.get("id")
-    game_state = Games.query.filter_by(id=id).first()
+    game_id = request.args.get("id")
+    game_state = Games.query.filter_by(id=game_id).first()
     if game_state is None:
-        flash(f'This game does not exists.', 'danger')
+        flash('This game does not exists.', 'danger')
         return redirect(url_for('lobby'))
     if game_state.first_player_id == current_user.id:
-        return render_template('game.html', id=id,
+        return render_template('game.html', id=game_id,
             opponent=game_state.second_player.username
             if game_state.second_player is not None else None)
     if game_state.second_player_id == current_user.id:
-        return render_template('game.html', id=id, opponent=game_state.first_player.username)
+        return render_template('game.html', id=game_id, opponent=game_state.first_player.username)
     if game_state.second_player_id is None:
         game_state.second_player_id = current_user.id
         game_state.status = 1
         db.session.commit()
-        return render_template('game.html', id=id, opponent=game_state.first_player.username)
+        return render_template('game.html', id=game_id, opponent=game_state.first_player.username)
     flash('You are not a player in this game.', 'danger')
     return redirect(url_for('lobby'))
 
@@ -148,6 +148,8 @@ def play(data):
                 game_data.game = json.dumps(game_state)
                 db.session.commit()
                 emit("game state", json.dumps(foxintheforest.get_player_game(game_state, player)))
+        if game_data.status == 2:
+            emit("game ended", json.dumps({"score": state["score"], "discards": state["discards"]}))
     else:
         flash_io("You are not a player in this game.", "danger")
 
@@ -159,15 +161,19 @@ def get_game(data):
     game_data = Games.query.filter_by(id=game_id).first()
     if game_data is None:
         flash_io('This game does not exists.', 'danger')
-    elif game_data.status == 2:
-        flash_io('Game finished.', 'danger')
     # if game.second_player:
     #     gameState = json.loads(game.game)
     elif game_data.first_player_id == current_user.id:
-        game_state = json.loads(game_data.game)
-        emit("game", json.dumps(foxintheforest.get_player_game(game_state, 0)))
+        player = 0
     elif game_data.second_player_id == current_user.id:
-        game_state = json.loads(game_data.game)
-        emit("game", json.dumps(foxintheforest.get_player_game(game_state, 1)))
+        player = 1
     else:
         flash_io('You are not a player in this game.', 'danger')
+        return
+    game_state = json.loads(game_data.game)
+    emit("game", json.dumps(foxintheforest.get_player_game(game_state, player)))
+    if game_data.status == 2:
+        state = foxintheforest.get_state_from_game(json.loads(game_data.game))
+        emit("game ended", json.dumps({"score": state["score"], "discards": state["discards"]}))
+        flash_io('Game finished.', 'danger')
+    return

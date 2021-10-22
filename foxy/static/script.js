@@ -113,6 +113,7 @@ async function showState(game) {
             special = 3;
           } else if (play[1][0] == 5) {
             opponent_hand.push([null, null]);
+            deck.shift();
             special = 5;
           }
           break;
@@ -574,6 +575,11 @@ if (window.matchMedia("(hover: hover)").matches) {
         event.target.addEventListener("mouseleave", () => {
           helpdiv.classList.add("hidden");
         }, {once: true});
+      }
+    } else {
+      for (let value of [1,3,5,7,9,11]) {
+        let helpdiv = document.getElementById("help"+value);
+        helpdiv.classList.add("hidden");
       }
     }
   });

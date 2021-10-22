@@ -188,6 +188,7 @@ async function updateState(game) {
           trick.push(play);
           if (play[1][0] == 3) {
             if (animate) await playerDrawTrump();
+            if (animate) sortPlayerHand();
             special = 3;
           } else if (play[1][0] == 5) {
             if (animate) await playerDrawCard(game.init_draw_deck[nbr_cards_drawn]);

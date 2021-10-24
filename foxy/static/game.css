@@ -261,7 +261,7 @@
 #message div
 {
   color: black;
-  font-size: 100pt;
+  font-size: calc(min(17vw, 20vh));
   font-weight: bold;
   font-family: "Arial Black", Gadget, sans-serif;
   margin: auto;

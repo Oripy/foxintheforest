@@ -172,6 +172,18 @@ def get_game(data):
         return
     game_state = json.loads(game_data.game)
     emit("game", json.dumps(foxintheforest.get_player_game(game_state, player)))
+    if game_data.second_player.username in AI_dict.keys():
+        state = foxintheforest.get_state_from_game(game_state)
+        while state["current_player"] == 1 and game_data.status != 2:
+            ai_play = AI_dict[game_data.second_player.username].ai_play(
+                foxintheforest.get_player_game(game_state, 1))
+            game_state = foxintheforest.play(game_state, ai_play)
+            state = foxintheforest.get_state_from_game(game_state)
+            if len(state["discards"][0]) + len(state["discards"][1]) == 26:
+                game_data.status = 2
+            game_data.game = json.dumps(game_state)
+            db.session.commit()
+            emit("game state", json.dumps(foxintheforest.get_player_game(game_state, player)))
     if game_data.status == 2:
         state = foxintheforest.get_state_from_game(json.loads(game_data.game))
         emit("game ended", json.dumps({"score": state["score"], "discards": state["discards"]}))

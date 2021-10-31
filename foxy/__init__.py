@@ -1,3 +1,9 @@
+"""Implementation of Fox in the Forest, a trick-taking game for two players
+    designed by Joshua Buergel
+
+    Complete website with frontend and server using Flask, SocketIO and vanilla JS
+"""
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate

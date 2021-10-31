@@ -1,6 +1,7 @@
 import unittest
-import foxy.foxintheforest as foxintheforest
 import random
+
+from foxy import foxintheforest
 
 class TestBasicFunctions(unittest.TestCase):
     def test_other_player(self):
@@ -8,9 +9,9 @@ class TestBasicFunctions(unittest.TestCase):
         self.assertEqual(foxintheforest.other_player(0), 1)
     
     def test_trick_winner(self):
-        self.assertFalse(foxintheforest.trick_winner(0, [None, None], [1, "s"]))
-        self.assertFalse(foxintheforest.trick_winner(0, [[1, "c"], None], [1, "s"]))
-        self.assertFalse(foxintheforest.trick_winner(0, [None, [1, "c"]], [1, "s"]))
+        self.assertTupleEqual(foxintheforest.trick_winner(0, [[None, None], [None, None]], [1, "s"]), (-1, -1))
+        self.assertTupleEqual(foxintheforest.trick_winner(0, [[1, "c"], [None, None]], [1, "s"]), (-1, -1))
+        self.assertTupleEqual(foxintheforest.trick_winner(0, [[None, None], [1, "c"]], [1, "s"]), (-1, -1))
         self.assertTupleEqual(foxintheforest.trick_winner(0, [[4, "c"], [2, "c"]], [1, "s"]), (0, 0))
         self.assertTupleEqual(foxintheforest.trick_winner(0, [[2, "c"], [4, "c"]], [1, "s"]), (1, 1))
         self.assertTupleEqual(foxintheforest.trick_winner(0, [[4, "c"], [2, "s"]], [1, "s"]), (1, 1))
@@ -303,7 +304,7 @@ class TestScore(unittest.TestCase):
                 selected_play = foxintheforest.list_allowed(self.state, 1)[0]
             foxintheforest.play(self.game, selected_play)
             self.state = foxintheforest.get_state_from_game(self.game)
-        self.assertEqual(foxintheforest.score(self.state), [8, 3])
+        self.assertEqual(foxintheforest.get_score(self.state), [8, 3])
         
         random.seed(21)
         self.game = foxintheforest.new_game()
@@ -316,4 +317,4 @@ class TestScore(unittest.TestCase):
                 selected_play = foxintheforest.list_allowed(self.state, 1)[0]
             foxintheforest.play(self.game, selected_play)
             self.state = foxintheforest.get_state_from_game(self.game)
-        self.assertEqual(foxintheforest.score(self.state), [2, 7])
+        self.assertEqual(foxintheforest.get_score(self.state), [2, 7])

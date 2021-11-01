@@ -149,16 +149,18 @@ async function showState(game) {
         case false:
           player_hand = removeCardFromHand(player_hand, play[1]);
           trick.push(play);
+          next_player = 1-player;
           if (play[1][0] == 3) {
             player_hand.push(trump_card);
             trump_card = null;
             special = 3;
+            next_player = player;
           } else if (play[1][0] == 5) {
             player_hand.push(deck[0]);
             deck.shift();
             special = 5;
+            next_player = player;
           }
-          next_player = player;
           break;
         case 3:
           special = false;
@@ -177,16 +179,18 @@ async function showState(game) {
         case false:
           opponent_hand.pop();
           trick.push(play);
+          next_player = player;
           if (play[1][0] == 3) {
             opponent_hand.push([null, null]);
             trump_card = null;
             special = 3;
+            next_player = 1-player;
           } else if (play[1][0] == 5) {
             opponent_hand.push([null, null]);
             deck.shift();
             special = 5;
+            next_player = 1-player;
           }
-          next_player = 1-player;
           break;
         case 3:
           special = false;
@@ -260,17 +264,19 @@ async function updateState(game) {
         case false:
           if (animate) await playerPlayCard(play[1]);
           trick.push(play);
+          next_player = 1-player;
           if (play[1][0] == 3) {
             if (animate) await playerDrawTrump();
             if (animate) sortPlayerHand();
             special = 3;
+            next_player = player;
           } else if (play[1][0] == 5) {
             if (animate) await playerDrawCard(game.init_draw_deck[nbr_cards_drawn]);
             if (animate) sortPlayerHand();
             nbr_cards_drawn += 1;
             special = 5;
+            next_player = player;
           }
-          next_player = 1-player;
           break;
         case 3:
           special = false;
@@ -289,15 +295,17 @@ async function updateState(game) {
         case false:
           if (animate) await opponentPlayCard(play[1]);
           trick.push(play);
+          next_player = player;
           if (play[1][0] == 3) {
             if (animate) await opponentDrawTrump();
             special = 3;
+            next_player = 1-player;
           } else if (play[1][0] == 5) {
             if (animate) await opponentDrawCard();
             nbr_cards_drawn += 1;
             special = 5;
+            next_player = 1-player;
           }
-          next_player = player;
           break;
         case 3:
           special = false;

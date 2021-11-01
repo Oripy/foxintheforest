@@ -1,43 +1,57 @@
+// consts to access URL parameters and change them according to gameplay
 const urlParams = new URLSearchParams(window.location.search);
 const url = new URL(window.location);
-const socket = io();
 
+// Card suits, their colors and symbol
 const suitHTML = {'h': ['&hearts;', 'red'],
                   's': ['&spades;', 'black'],
                   'c': ['&clubs;', 'green']};
 
-let game_id = urlParams.get('id');
-let current_plays = -1;
+let game_id = urlParams.get('id'); // Game ID in the database
+
+// Current game state (empty before receiving game info)
 let current_game;
+// Current player number in the game state (0 or 1), -1 before receiving game info
+let player = -1;
+
+// Step of the current view of the game (-1 for start of the game)
+let current_plays = -1;
 if (urlParams.has('play')) {
   current_plays = urlParams.get('play');
 }
-let player = -1;
-
+// When user presses the back button reload the previous state and play the moves again
 window.onpopstate = (event) => {
   current_plays = event.state['play'];
   Queue.enqueue(() => showState(current_game));
 };
 
-socket.on('connect', () => socket.emit('get game', JSON.stringify({id: game_id})));
+// SocketIO socket
+const socket = io();
 socket.on('error', (error) => console.error('SocketIO error ', error));
+// When socket connected, request for the game state
+socket.on('connect', () => socket.emit('get game', JSON.stringify({id: game_id})));
+// When receiving the game state, show it
 socket.on('game', (game) => Queue.enqueue(() => showState(JSON.parse(game))));
+// When receiving the game state update, update it with animations
 socket.on('game state', (game) => Queue.enqueue(() => updateState(JSON.parse(game))));
+// Show alert messages
 socket.on('message', (data) => showMessage(JSON.parse(data).text, JSON.parse(data).category));
+// If game ended, show the result overlay
 socket.on('game ended', (data) => Queue.enqueue(() => showResult(JSON.parse(data))));
 
-document.getElementById("playerhand").addEventListener("click", playCard);
-
+// Function to delay some animation
 function wait(milliseconds) {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
+// Function to change URL parameter to show given play
 function setURL(play) {
   urlParams.set('play', play);
   url.searchParams.set('play', play);
   history.pushState({'play': play}, '', url);
 }
 
+// Display a "Flash" message, same style as Flask "Flash" but hide itself after a while
 function showMessage(text, category) {
   let message_div = document.getElementById("messages");
   let message = document.createElement("div");
@@ -51,12 +65,52 @@ function showMessage(text, category) {
   }, 4000);
 }
 
-function removeCardFromHand(hand, card) {
-  return hand.filter(function(c){ 
+// Removes a card from a list of cards
+function removeCardFromHand(card_list, card) {
+  return card_list.filter(function(c){ 
     return (c[0] != card[0] || c[1] != card[1]); 
   });
 }
 
+// Converts a card [1, "h"] to a string "1h"
+function cardToId(card) {
+  return card.join(''); 
+}
+
+// Converts a string "1h" to a card [1, "h"]
+function IdToCard(id) {
+  return [parseInt(id.slice(0, -1)), id.slice(-1)]; 
+}
+
+// Convert a card [1, "h"] to its HTML representation
+function cardHTML(card) {
+  if ((card == "empty") || (card == "back")) {
+    return "&nbsp;<br />&nbsp;";
+  } else {
+    return card[0]+"<br />"+suitHTML[card[1]][0];
+  }
+}
+
+// Returns a <div> with the given card 
+function getCard(card, id=undefined) {
+  let div = document.createElement("div");
+  div.innerHTML = cardHTML(card);
+  div.classList.add("playingcard");
+  switch (card) {
+    case 'back':
+      div.classList.add("back");
+      break;
+    case 'empty':
+      div.classList.add("empty");
+      break;
+    default:
+      div.classList.add(suitHTML[card[1]][1]);
+  }
+  if (id) div.id = id;
+  return div;
+}
+
+// Change the view to display the given state
 async function showState(game) {
   console.log(game);
   player = parseInt(game.player);
@@ -160,6 +214,7 @@ async function showState(game) {
   }
 }
 
+// Animate the cards step by step until the given state is reached
 async function updateState(game) {
   current_game = game;
   let trump_card = game.init_trump_card;
@@ -235,6 +290,7 @@ async function updateState(game) {
   }
 }
 
+// Returns the winner of a trick
 function trickwinner(leading_player, cardp0, cardp1, trump) {
   let winner = undefined;
   let trump_suit = trump[1];
@@ -266,14 +322,7 @@ function trickwinner(leading_player, cardp0, cardp1, trump) {
   return winner
 }
 
-function cardToId(card) {
-  return card.join(''); 
-}
-
-function IdToCard(id) {
-  return [parseInt(id.slice(0, -1)), id.slice(-1)]; 
-}
-
+// Event handler for user action on a card 
 function playCard(event) {
   if (event.target && event.target.matches(".playingcard")) {
     if ((window.matchMedia("(hover: hover)").matches) || (event.target.classList.contains("sel"))) {
@@ -286,8 +335,7 @@ function playCard(event) {
           helpdiv.classList.add("hidden");
         }
       }
-    }
-    else if (window.matchMedia("(hover: none)").matches) {
+    } else if (window.matchMedia("(hover: none)").matches) {
       let value = parseInt(event.target.id.slice(0, -1));
       if ([1,3,5,7,9,11].includes(value)) {
         let helpdiv = document.getElementById("help"+value);
@@ -298,6 +346,11 @@ function playCard(event) {
   }
 }
 
+// Animate a card from start to target
+//  stay = true means the card stays at the target destination,
+//      otherwise it disapears after reaching the target destination
+//  replace = true means the card is replacing the target destination
+//  remove_start = true means the starting card is removed in the process 
 async function moveCard(card, start, target, stay=false, replace=false, remove_start=false) {
   let start_position = start.getBoundingClientRect();
   if (remove_start) {
@@ -339,32 +392,7 @@ async function moveCard(card, start, target, stay=false, replace=false, remove_s
   });
 }
 
-function cardHTML(card) {
-  if ((card == "empty") || (card == "back")) {
-    return "&nbsp;<br />&nbsp;";
-  } else {
-    return card[0]+"<br />"+suitHTML[card[1]][0];
-  }
-}
-
-function getCard(card, id=undefined) {
-  let div = document.createElement("div");
-  div.innerHTML = cardHTML(card);
-  div.classList.add("playingcard");
-  switch (card) {
-    case 'back':
-      div.classList.add("back");
-      break;
-    case 'empty':
-      div.classList.add("empty");
-      break;
-    default:
-      div.classList.add(suitHTML[card[1]][1]);
-  }
-  if (id) div.id = id;
-  return div;
-}
-
+// Show the given trump card
 function setTrumpCard(trump_card) {
   let trump = document.getElementById("trump").children[0];
   if (trump_card != null) {
@@ -377,6 +405,7 @@ function setTrumpCard(trump_card) {
   }
 }
 
+// Show the given opponent hand
 function setOpponentHand(hand) {
   let opponenthand = document.getElementById("opponenthand");
   let children = opponenthand.children;
@@ -393,6 +422,7 @@ function setOpponentHand(hand) {
   }
 }
 
+// Show the given player hand
 function setPlayerHand(hand) {
   let playerhand = document.getElementById("playerhand");
 
@@ -418,6 +448,7 @@ function setPlayerHand(hand) {
   }
 }
 
+// Sort the player hand in place
 async function sortPlayerHand() {
   let playerhand = document.getElementById("playerhand");
   [...playerhand.children]
@@ -442,6 +473,7 @@ async function sortPlayerHand() {
     .forEach(node=>playerhand.appendChild(node)); 
 }
 
+// Animate a card from the player hand to the trick
 async function playerPlayCard(c) {
   let target = document.getElementById("pt");
   let card = document.getElementById(cardToId(c));
@@ -450,6 +482,7 @@ async function playerPlayCard(c) {
   card.classList.remove("selectable");
 }
 
+// Animate a card from the opponent hand to the trick, reveling it in the process
 async function opponentPlayCard(c) {
   let hand = document.getElementById("opponenthand").children[0];
   let target = document.getElementById("ot");
@@ -459,6 +492,7 @@ async function opponentPlayCard(c) {
   hand.removeChild(hand.children[0]);
 }
 
+// Animate a card from the deck to the player hand, reveling it in the process
 async function playerDrawCard(c) {
   let playerhand = document.getElementById("playerhand");
   let deck = document.getElementById("deck");
@@ -467,6 +501,7 @@ async function playerDrawCard(c) {
   await moveCard(card, deck, playerhand, true);
 }
 
+// Animate a card from the deck to the opponent hand
 async function opponentDrawCard() {
   let opponenthand = document.getElementById("opponenthand");
   let deck = document.getElementById("deck");
@@ -474,12 +509,14 @@ async function opponentDrawCard() {
   await moveCard(card, deck, opponenthand, true);
 }
 
+// Animate a card from the player hand to the deck pile (discarding the card)
 async function playerDiscardCard(c) {
   let target = document.getElementById("deck");
   let card = document.getElementById(cardToId(c));
   await moveCard(card, card, target, false, false, true);
 }
 
+// Animate a card from the opponent hand to the deck pile (discarding the card)
 async function opponentDiscardCard() {
   let opponentcard = document.getElementById("opponenthand").children[0];
   let deck = document.getElementById("deck");
@@ -487,6 +524,7 @@ async function opponentDiscardCard() {
   await moveCard(card, opponentcard, deck, false, false, true);
 }
 
+// Animate a card from the trump card to the player's hand
 async function playerDrawTrump() {
   let playerhand = document.getElementById("playerhand");
   let trump = document.getElementById("trump").children[0];
@@ -497,6 +535,7 @@ async function playerDrawTrump() {
   trump.replaceWith(getCard("empty", "empty"));
 }
 
+// Animate a card from the trump card to the opponent's hand
 async function opponentDrawTrump() {
   let opponenthand = document.getElementById("opponenthand");
   let trump = document.getElementById("trump").children[0];
@@ -505,6 +544,7 @@ async function opponentDrawTrump() {
   trump.replaceWith(getCard("empty", "empty"));
 }
 
+// Animate a card from the player hand to the trump card
 async function playerPlayTrump(c) {
   let source = document.getElementById(cardToId(c));
   let trump = document.getElementById("trump").children[0];
@@ -512,6 +552,7 @@ async function playerPlayTrump(c) {
   await moveCard(card, source, trump, false, true, true);
 }
 
+// Animate a card from the opponent hand to the trump card
 async function opponentPlayTrump(c) {
   let hand = document.getElementById("opponenthand").children[0];
   let trump = document.getElementById("trump").children[0];
@@ -519,6 +560,7 @@ async function opponentPlayTrump(c) {
   await moveCard(card, hand, trump, false, true, true);
 }
 
+// Remove both cards from the tricks, animating toward the player who won the trick
 async function clearTrick(winner) {
   let target;
   if (winner == player) {
@@ -539,6 +581,7 @@ async function clearTrick(winner) {
   }
 }
 
+// Displays the result of the game in an overlay
 async function showResult(data) {
   let score = data["score"];
   let text = "You ";
@@ -568,22 +611,10 @@ async function showResult(data) {
   await wait(100);
 }
 
-if (window.matchMedia("(hover: none)").matches) {
-  document.addEventListener("click", (event) => {
-    let selected_cards = document.getElementsByClassName("sel");
-    for (let i = 0; i < selected_cards.length; i++) {
-      if (! selected_cards[i].contains(event.target)) {
-        let value = parseInt(selected_cards[i].id.slice(0, -1));
-        if ([1,3,5,7,9,11].includes(value)) {
-          let helpdiv = document.getElementById("help"+value);
-          helpdiv.classList.add("hidden");
-        }
-        selected_cards[i].classList.remove("sel");
-      }
-    }
-  });
-}
+// Events handling to play a card
+document.getElementById("playerhand").addEventListener("click", playCard);
 
+// Events handling to show hints on special cards
 if (window.matchMedia("(hover: hover)").matches) {
   document.addEventListener("mouseover", (event) => {
     if (event.target.classList.contains("playingcard")) {
@@ -599,6 +630,23 @@ if (window.matchMedia("(hover: hover)").matches) {
       for (let value of [1,3,5,7,9,11]) {
         let helpdiv = document.getElementById("help"+value);
         helpdiv.classList.add("hidden");
+      }
+    }
+  });
+}
+
+// Events handling to select cards (in case of touchscreens with no hover capabilities)
+if (window.matchMedia("(hover: none)").matches) {
+  document.addEventListener("click", (event) => {
+    let selected_cards = document.getElementsByClassName("sel");
+    for (let i = 0; i < selected_cards.length; i++) {
+      if (! selected_cards[i].contains(event.target)) {
+        let value = parseInt(selected_cards[i].id.slice(0, -1));
+        if ([1,3,5,7,9,11].includes(value)) {
+          let helpdiv = document.getElementById("help"+value);
+          helpdiv.classList.add("hidden");
+        }
+        selected_cards[i].classList.remove("sel");
       }
     }
   });

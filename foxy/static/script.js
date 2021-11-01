@@ -110,6 +110,17 @@ function getCard(card, id=undefined) {
   return div;
 }
 
+// Highlight the name of the next player
+function highlightPlayer(p) {
+  if (player == p) {
+    document.getElementById("opponentname").classList.remove("select");
+    document.getElementById("playername").classList.add("select");
+  } else {
+    document.getElementById("opponentname").classList.add("select");
+    document.getElementById("playername").classList.remove("select");
+  }
+}
+
 // Change the view to display the given state
 async function showState(game) {
   console.log(game);
@@ -121,6 +132,8 @@ async function showState(game) {
   let deck = [...game.init_draw_deck];
   let special = false;
   let trick = [];
+  let next_player = undefined;
+  let winner = undefined;
 
   current_plays = Math.min(game.plays.length, current_plays);
   if (current_plays == -1) {
@@ -145,15 +158,18 @@ async function showState(game) {
             deck.shift();
             special = 5;
           }
+          next_player = player;
           break;
         case 3:
           special = false;
           player_hand = removeCardFromHand(player_hand, play[1]);
           trump_card = play[1];
+          next_player = 1-player;
           break;
         case 5:
           special = false;
           player_hand = removeCardFromHand(player_hand, play[1]);
+          next_player = 1-player;
           break;
       }
     } else {
@@ -170,22 +186,25 @@ async function showState(game) {
             deck.shift();
             special = 5;
           }
+          next_player = 1-player;
           break;
         case 3:
           special = false;
           opponent_hand.pop();
           trump_card = play[1];
+          next_player = player;
           break;
         case 5:
           special = false;
           opponent_hand.pop();
+          next_player = player;
           break;
       }
     }
     if (trick.length >= 2 && !special) {
       let cardp0 = (trick[0][0] == 0) ? trick[0][1] : trick[1][1];
       let cardp1 = (trick[0][0] == 1) ? trick[0][1] : trick[1][1];
-      let winner = trickwinner(trick[0][0], cardp0, cardp1, trump_card);
+      [winner, next_player] = trickwinner(trick[0][0], cardp0, cardp1, trump_card);
       if (winner == player) {
         document.getElementById("playerscore").innerHTML++;
       } else {
@@ -209,6 +228,11 @@ async function showState(game) {
     }
   }
   await wait(1000);
+  if (current_plays == -1) {
+    highlightPlayer(game.first_player);
+  } else {
+    highlightPlayer(next_player);
+  }
   if (game.plays.length > current_plays) {
     Queue.enqueue(() => updateState(game));
   }
@@ -220,6 +244,8 @@ async function updateState(game) {
   let trump_card = game.init_trump_card;
   let special = false;
   let nbr_cards_drawn = 0;
+  let next_player = undefined;
+  let winner = undefined;
   let trick = [];
   
   for (let [index, play] of game.plays.entries()) {
@@ -244,15 +270,18 @@ async function updateState(game) {
             nbr_cards_drawn += 1;
             special = 5;
           }
+          next_player = 1-player;
           break;
         case 3:
           special = false;
           if (animate) await playerPlayTrump(play[1]);
           trump_card = play[1];
+          next_player = player;
           break;
         case 5:
           special = false;
           if (animate) await playerDiscardCard(play[1]);
+          next_player = player;
           break;
       }
     } else {
@@ -268,31 +297,36 @@ async function updateState(game) {
             nbr_cards_drawn += 1;
             special = 5;
           }
+          next_player = player;
           break;
         case 3:
           special = false;
           if (animate) await opponentPlayTrump(play[1]);
           trump_card = play[1];
+          next_player = 1-player;
           break;
         case 5:
           special = false;
           if (animate) await opponentDiscardCard();
+          next_player = 1-player;
           break;
       }
     }
     if (trick.length >= 2 && !special) {
       let cardp0 = (trick[0][0] == 0) ? trick[0][1] : trick[1][1];
       let cardp1 = (trick[0][0] == 1) ? trick[0][1] : trick[1][1];
-      let winner = trickwinner(trick[0][0], cardp0, cardp1, trump_card);
+      [winner, next_player] = trickwinner(trick[0][0], cardp0, cardp1, trump_card);
       if (animate) await clearTrick(winner);
       trick = [];
     }
+    highlightPlayer(next_player);
   }
 }
 
 // Returns the winner of a trick
 function trickwinner(leading_player, cardp0, cardp1, trump) {
   let winner = undefined;
+  let next_leading_player = undefined;
   let trump_suit = trump[1];
   let cardp0_suit = cardp0[1];
   let cardp1_suit = cardp1[1];
@@ -307,7 +341,7 @@ function trickwinner(leading_player, cardp0, cardp1, trump) {
     if (cardp0_value != 9) {
       cardp1_suit = trump_suit;
     }
-  }
+  } 
   if (cardp0_suit == cardp1_suit) {
     winner = (cardp0_value > cardp1_value) ? 0 : 1;
   } else {
@@ -319,7 +353,12 @@ function trickwinner(leading_player, cardp0, cardp1, trump) {
       winner = leading_player;
     }
   }
-  return winner
+  if ((cardp0_value == 1 && winner == 1) || (cardp1_value == 1 && winner == 0)) {
+    next_leading_player = 1 - winner;
+  } else {
+    next_leading_player = winner;
+  }
+  return [winner, next_leading_player]
 }
 
 // Event handler for user action on a card 

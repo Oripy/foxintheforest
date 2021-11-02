@@ -227,8 +227,8 @@ async function showState(game) {
       document.getElementById('ot').replaceWith(getCard(p[1], 'ot'));
     }
   }
-  await wait(1000);
   highlightPlayer(next_player);
+  await wait(1000);
   if (game.plays.length > current_plays) {
     Queue.enqueue(() => updateState(game));
   }

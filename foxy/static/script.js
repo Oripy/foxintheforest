@@ -132,7 +132,7 @@ async function showState(game) {
   let deck = [...game.init_draw_deck];
   let special = false;
   let trick = [];
-  let next_player = undefined;
+  let next_player = game.first_player;
   let winner = undefined;
 
   current_plays = Math.min(game.plays.length, current_plays);
@@ -145,11 +145,11 @@ async function showState(game) {
   
   for (let play of game.plays.slice(0, current_plays)) {
     if (play[0] === player) {
+      next_player = 1-player;
       switch (special) {
         case false:
           player_hand = removeCardFromHand(player_hand, play[1]);
           trick.push(play);
-          next_player = 1-player;
           if (play[1][0] == 3) {
             player_hand.push(trump_card);
             trump_card = null;
@@ -166,20 +166,18 @@ async function showState(game) {
           special = false;
           player_hand = removeCardFromHand(player_hand, play[1]);
           trump_card = play[1];
-          next_player = 1-player;
           break;
         case 5:
           special = false;
           player_hand = removeCardFromHand(player_hand, play[1]);
-          next_player = 1-player;
           break;
       }
     } else {
+      next_player = player;
       switch (special) {
         case false:
           opponent_hand.pop();
           trick.push(play);
-          next_player = player;
           if (play[1][0] == 3) {
             opponent_hand.push([null, null]);
             trump_card = null;
@@ -196,12 +194,10 @@ async function showState(game) {
           special = false;
           opponent_hand.pop();
           trump_card = play[1];
-          next_player = player;
           break;
         case 5:
           special = false;
           opponent_hand.pop();
-          next_player = player;
           break;
       }
     }
@@ -232,11 +228,7 @@ async function showState(game) {
     }
   }
   await wait(1000);
-  if (current_plays == -1) {
-    highlightPlayer(game.first_player);
-  } else {
-    highlightPlayer(next_player);
-  }
+  highlightPlayer(next_player);
   if (game.plays.length > current_plays) {
     Queue.enqueue(() => updateState(game));
   }
@@ -248,7 +240,7 @@ async function updateState(game) {
   let trump_card = game.init_trump_card;
   let special = false;
   let nbr_cards_drawn = 0;
-  let next_player = undefined;
+  let next_player = game.first_player;
   let winner = undefined;
   let trick = [];
   
@@ -260,11 +252,11 @@ async function updateState(game) {
       setURL(current_plays);
     }
     if (play[0] === player) {
+      next_player = 1-player;
       switch (special) {
         case false:
           if (animate) await playerPlayCard(play[1]);
           trick.push(play);
-          next_player = 1-player;
           if (play[1][0] == 3) {
             if (animate) await playerDrawTrump();
             if (animate) sortPlayerHand();
@@ -282,20 +274,18 @@ async function updateState(game) {
           special = false;
           if (animate) await playerPlayTrump(play[1]);
           trump_card = play[1];
-          next_player = player;
           break;
         case 5:
           special = false;
           if (animate) await playerDiscardCard(play[1]);
-          next_player = player;
           break;
       }
     } else {
+      next_player = player;
       switch (special) {
         case false:
           if (animate) await opponentPlayCard(play[1]);
           trick.push(play);
-          next_player = player;
           if (play[1][0] == 3) {
             if (animate) await opponentDrawTrump();
             special = 3;
@@ -311,12 +301,10 @@ async function updateState(game) {
           special = false;
           if (animate) await opponentPlayTrump(play[1]);
           trump_card = play[1];
-          next_player = 1-player;
           break;
         case 5:
           special = false;
           if (animate) await opponentDiscardCard();
-          next_player = 1-player;
           break;
       }
     }

@@ -239,7 +239,6 @@ async function showState(game) {
     }
   }
   highlightPlayer(next_player);
-  await wait(1000);
   if (game.plays.length > current_plays) {
     Queue.enqueue(() => updateState(game));
   }

@@ -38,6 +38,8 @@ socket.on('game state', (game) => Queue.enqueue(() => updateState(JSON.parse(gam
 socket.on('message', (data) => showMessage(JSON.parse(data).text, JSON.parse(data).category));
 // If game ended, show the result overlay
 socket.on('game ended', (data) => Queue.enqueue(() => showResult(JSON.parse(data))));
+// If match ended, show the result overlay
+socket.on('match ended', (data) => Queue.enqueue(() => showEnd(JSON.parse(data))));
 
 // Function to delay some animation
 function wait(milliseconds) {
@@ -639,8 +641,29 @@ async function showResult(data) {
     text += '<br>Victorious';
   } else {
     text += '<br>Greedy';
-  } 
-  // let el = document.getElementById("message");
+  }
+  document.getElementById("messagecontent").innerHTML = text;
+  document.getElementById("message").classList.remove("invisible");
+  document.getElementById("message").addEventListener("click", () => {
+    document.getElementById("message").classList.add("invisible");
+    document.getElementById("messagecontent").innerHTML = "";
+    socket.emit('get game', JSON.stringify({id: game_id}));
+  }, {once: true})
+  await wait(100);
+}
+
+async function showEnd(data) {
+  let score = data["score"];
+  let text = "You ";
+  let diff = score[player] - score[1 - player];
+  if (diff > 0) {
+    text += "WIN";
+  } else if (diff == 0) {
+    text += "DRAW";
+  } else {
+    text += "LOST";
+  }
+  text += `<br>${score[player]} - ${score[1 - player]}`
   document.getElementById("messagecontent").innerHTML = text;
   document.getElementById("message").classList.remove("invisible");
   await wait(100);

@@ -22,7 +22,7 @@ from flask_socketio import disconnect, emit
 
 from foxy import app, db, bcrypt, socketio
 from foxy.forms import RegistrationForm, LoginForm
-from foxy.models import User, Games
+from foxy.models import User, Matches, Games
 from foxy import foxintheforest
 from foxy import random_ai
 from foxy import good_ai
@@ -41,6 +41,11 @@ def authenticated_only(func: Callable) -> Callable:
 def flash_io(text: str, category: str = "info") -> None:
     """Send "message" to the client with the given category"""
     emit('message', json.dumps({"text": text, "category": category}))
+
+def create_new_game(match_id):
+    """Create a new game in the database"""
+    game_state = json.dumps(foxintheforest.new_game())
+    return Games(game=game_state, match_id=match_id, status=1)
 
 @app.route("/")
 @app.route("/home")
@@ -92,10 +97,10 @@ def lobby():
         create a new game,
         play on games where the login user is one of the player,
         join games created by other users"""
-    open_games = Games.query.filter(
-        (((Games.first_player_id==None)|(Games.second_player_id==None))&(Games.status<2)))
-    own_games = Games.query.filter(
-        (((Games.first_player_id==current_user.id)|(Games.second_player_id==current_user.id))&(Games.status<2)))
+    open_games = Matches.query.filter(
+        (((Matches.first_player_id==None)|(Matches.second_player_id==None))&(Matches.status<2)))
+    own_games = Matches.query.filter(
+        (((Matches.first_player_id==current_user.id)|(Matches.second_player_id==current_user.id))&(Matches.status<2)))
     return render_template('lobby.html', open_games=open_games, own_games=own_games)
 
 @app.route("/new", methods=['POST'])
@@ -105,29 +110,35 @@ def new():
         if AI is given, adds the AI as the second player
         if successful returns the game page
         othewise redirects to the lobby"""
-    game_state: foxintheforest.Game = json.dumps(foxintheforest.new_game())
     if 'AI' in request.form:
         ai = User.query.filter_by(username=request.form['AI']).first()
         if ai:
-            game_db = Games(game=game_state, name=request.form['gamename'],
-                            first_player_id=current_user.id,
-                            second_player_id=ai.id, status=1)
+            match_db = Matches(name=request.form['gamename'],
+                               first_player_id=current_user.id,
+                               second_player_id=ai.id, status=1)
+            db.session.add(match_db)
+            db.session.flush()
+            game_db = create_new_game(match_db.id)
         else:
             flash('This AI does not exists.', 'danger')
             return redirect(url_for('lobby'))
     else:
-        game_db = Games(game=game_state, name=request.form['gamename'],
-                        first_player_id=current_user.id)
+        match_db = Matches(name=request.form['gamename'],
+                           first_player_id=current_user.id,
+                           status=1)
+        db.session.add(match_db)
+        db.session.flush()
+        game_db = create_new_game(match_db.id)
     db.session.add(game_db)
     db.session.commit()
-    return redirect(url_for('game', id=game_db.id))
+    return redirect(url_for('game', id=match_db.id))
 
 @app.route("/game")
 @login_required
 def game():
     """Load the game page, if a spot is free, user joins the game"""
     game_id = request.args.get("id")
-    game_state = Games.query.filter_by(id=game_id).first()
+    game_state = Matches.query.filter_by(id=game_id).first()
     if game_state is None:
         flash('This game does not exists.', 'danger')
         return redirect(url_for('lobby'))
@@ -151,22 +162,23 @@ def get_game(data):
     """Send the game state through socketio messages"""
     req = json.loads(data)
     game_id = req["id"]
-    game_data = Games.query.filter_by(id=game_id).first()
+    match_data = Matches.query.filter_by(id=game_id).first()
+    game_data = Games.query.filter_by(match_id=game_id).order_by(Games.date_created.desc()).first()
     if game_data is None:
         flash_io('This game does not exists.', 'danger')
-    elif game_data.first_player_id == current_user.id:
+    elif match_data.first_player_id == current_user.id:
         player = 0
-    elif game_data.second_player_id == current_user.id:
+    elif match_data.second_player_id == current_user.id:
         player = 1
     else:
         flash_io('You are not a player in this game.', 'danger')
         return
     game_state = json.loads(game_data.game)
     emit("game", json.dumps(foxintheforest.get_player_game(game_state, player)))
-    if game_data.second_player.username in AI_dict.keys():
+    if match_data.second_player.username in AI_dict.keys():
         state = foxintheforest.get_state_from_game(game_state)
         while state["current_player"] == 1 and game_data.status != 2:
-            ai_play = AI_dict[game_data.second_player.username].ai_play(
+            ai_play = AI_dict[match_data.second_player.username].ai_play(
                 foxintheforest.get_player_game(game_state, 1))
             game_state = foxintheforest.play(game_state, ai_play)
             state = foxintheforest.get_state_from_game(game_state)
@@ -177,8 +189,17 @@ def get_game(data):
             emit("game state", json.dumps(foxintheforest.get_player_game(game_state, player)))
     if game_data.status == 2:
         state = foxintheforest.get_state_from_game(json.loads(game_data.game))
+        match_data.score_first_player += state["score"][0]
+        match_data.score_second_player += state["score"][1]
         emit("game ended", json.dumps({"score": state["score"], "discards": state["discards"]}))
-        flash_io('Game finished.', 'danger')
+        if (match_data.score_first_player >= 21 or match_data.score_second_player >= 21):
+            match_data.status = 2
+            emit("match ended", json.dumps({"score": [match_data.score_first_player,
+                                                        match_data.score_second_player]}))
+            flash_io('Game finished.', 'danger')
+        else:
+            db.session.add(create_new_game(game_id))
+        db.session.commit()
     return
 
 @socketio.on('play')
@@ -189,16 +210,17 @@ def play(data):
     card_played = None
     game_id = req["id"]
     player = req["player"]
-    game_data = Games.query.filter_by(id=game_id).first()
+    match_data = Matches.query.filter_by(id=game_id).first()
+    game_data = Games.query.filter_by(match_id=game_id).order_by(Games.date_created.desc()).first()
     if game_data is None:
         flash_io("This game does not exists.", "danger")
-    elif (game_data.first_player_id == current_user.id \
-      or game_data.second_player_id == current_user.id) \
-      and (game_data.second_player_id is not None) and (game_data.status == 1):
+    elif (match_data.first_player_id == current_user.id \
+      or match_data.second_player_id == current_user.id) \
+      and (match_data.second_player_id is not None) and (game_data.status == 1):
         game_state = json.loads(game_data.game)
         state = foxintheforest.get_state_from_game(game_state)
-        if (game_data.first_player_id == current_user.id and state["current_player"] == 0) \
-        or (game_data.second_player_id == current_user.id and state["current_player"] == 1):
+        if (match_data.first_player_id == current_user.id and state["current_player"] == 0) \
+        or (match_data.second_player_id == current_user.id and state["current_player"] == 1):
             if req["play"][-1] in foxintheforest.COLORS and int(req["play"][:-1]) < 13:
                 card_played = foxintheforest.decode_card(req["play"])
                 game_state = foxintheforest.play(game_state, [player, card_played])
@@ -208,10 +230,10 @@ def play(data):
                 game_data.game = json.dumps(game_state)
                 db.session.commit()
         emit("game state", json.dumps(foxintheforest.get_player_game(game_state, player)))
-        if game_data.second_player.username in AI_dict.keys():
+        if match_data.second_player.username in AI_dict.keys():
             state = foxintheforest.get_state_from_game(game_state)
             while state["current_player"] == 1 and game_data.status != 2:
-                ai_play = AI_dict[game_data.second_player.username].ai_play(
+                ai_play = AI_dict[match_data.second_player.username].ai_play(
                     foxintheforest.get_player_game(game_state, 1))
                 game_state = foxintheforest.play(game_state, ai_play)
                 state = foxintheforest.get_state_from_game(game_state)
@@ -221,6 +243,15 @@ def play(data):
                 db.session.commit()
                 emit("game state", json.dumps(foxintheforest.get_player_game(game_state, player)))
         if game_data.status == 2:
+            match_data.score_first_player += state["score"][0]
+            match_data.score_second_player += state["score"][1]
             emit("game ended", json.dumps({"score": state["score"], "discards": state["discards"]}))
+            if (match_data.score_first_player >= 21 or match_data.score_second_player >= 21):
+                match_data.status = 2
+                emit("match ended", json.dumps({"score": [match_data.score_first_player,
+                                                          match_data.score_second_player]}))
+            else:
+                db.session.add(create_new_game(game_id))
+            db.session.commit()
     else:
         flash_io("You are not a player in this game.", "danger")

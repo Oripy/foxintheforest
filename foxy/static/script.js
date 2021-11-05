@@ -141,6 +141,13 @@ async function showState(game) {
   if (current_plays == -1) {
     current_plays = game.plays.length;
   }
+
+  if (current_plays < game.plays.length) {
+    document.getElementById("playingarea").style.filter = "saturate(50%)";
+  } else {
+    document.getElementById("playingarea").style.filter = "saturate(100%)";
+  }
+
   setURL(current_plays);
   document.getElementById("playerscore").innerHTML = 0;
   document.getElementById("opponentscore").innerHTML = 0;
@@ -318,6 +325,11 @@ async function updateState(game) {
       trick = [];
     }
     highlightPlayer(next_player);
+    if (index < game.plays.length-1) {
+      document.getElementById("playingarea").style.filter = "saturate(50%)";
+    } else {
+      document.getElementById("playingarea").style.filter = "saturate(100%)";
+    }
   }
 }
 

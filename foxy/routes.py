@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import Callable, Union
 from flask import flash, render_template, url_for, request, json, redirect
 from flask_login import login_user, logout_user, current_user, login_required
-from flask_socketio import disconnect, emit
+from flask_socketio import disconnect, emit, join_room
 
 from foxy import app, db, bcrypt, socketio
 from foxy.forms import RegistrationForm, LoginForm
@@ -162,6 +162,7 @@ def get_game(data):
     """Send the game state through socketio messages"""
     req = json.loads(data)
     game_id = req["id"]
+    join_room(game_id)
     match_data = Matches.query.filter_by(id=game_id).first()
     game_data = Games.query.filter_by(match_id=game_id).order_by(Games.date_created.desc()).first()
     if game_data is None:
@@ -175,18 +176,19 @@ def get_game(data):
         return
     game_state = json.loads(game_data.game)
     emit("game", json.dumps(foxintheforest.get_player_game(game_state, player)))
-    if match_data.second_player.username in AI_dict.keys():
-        state = foxintheforest.get_state_from_game(game_state)
-        while state["current_player"] == 1 and game_data.status != 2:
-            ai_play = AI_dict[match_data.second_player.username].ai_play(
-                foxintheforest.get_player_game(game_state, 1))
-            game_state = foxintheforest.play(game_state, ai_play)
+    if match_data.second_player:
+        if match_data.second_player.username in AI_dict.keys():
             state = foxintheforest.get_state_from_game(game_state)
-            if len(state["discards"][0]) + len(state["discards"][1]) == 26:
-                game_data.status = 2
-            game_data.game = json.dumps(game_state)
-            db.session.commit()
-            emit("game state", json.dumps(foxintheforest.get_player_game(game_state, player)))
+            while state["current_player"] == 1 and game_data.status != 2:
+                ai_play = AI_dict[match_data.second_player.username].ai_play(
+                    foxintheforest.get_player_game(game_state, 1))
+                game_state = foxintheforest.play(game_state, ai_play)
+                state = foxintheforest.get_state_from_game(game_state)
+                if len(state["discards"][0]) + len(state["discards"][1]) == 26:
+                    game_data.status = 2
+                game_data.game = json.dumps(game_state)
+                db.session.commit()
+                emit("game changed", json.dumps({}), room=game_id)
     if game_data.status == 2:
         state = foxintheforest.get_state_from_game(json.loads(game_data.game))
         match_data.score_first_player += state["score"][0]
@@ -205,7 +207,7 @@ def get_game(data):
 @socketio.on('play')
 @authenticated_only
 def play(data):
-    """Play the given move and send back game state through socketio messages"""
+    """Play the given move and send info that game state changed to all players"""
     req = json.loads(data)
     card_played = None
     game_id = req["id"]
@@ -229,29 +231,6 @@ def play(data):
                     game_data.status = 2
                 game_data.game = json.dumps(game_state)
                 db.session.commit()
-        emit("game state", json.dumps(foxintheforest.get_player_game(game_state, player)))
-        if match_data.second_player.username in AI_dict.keys():
-            state = foxintheforest.get_state_from_game(game_state)
-            while state["current_player"] == 1 and game_data.status != 2:
-                ai_play = AI_dict[match_data.second_player.username].ai_play(
-                    foxintheforest.get_player_game(game_state, 1))
-                game_state = foxintheforest.play(game_state, ai_play)
-                state = foxintheforest.get_state_from_game(game_state)
-                if len(state["discards"][0]) + len(state["discards"][1]) == 26:
-                    game_data.status = 2
-                game_data.game = json.dumps(game_state)
-                db.session.commit()
-                emit("game state", json.dumps(foxintheforest.get_player_game(game_state, player)))
-        if game_data.status == 2:
-            match_data.score_first_player += state["score"][0]
-            match_data.score_second_player += state["score"][1]
-            emit("game ended", json.dumps({"score": state["score"], "discards": state["discards"]}))
-            if (match_data.score_first_player >= 21 or match_data.score_second_player >= 21):
-                match_data.status = 2
-                emit("match ended", json.dumps({"score": [match_data.score_first_player,
-                                                          match_data.score_second_player]}))
-            else:
-                db.session.add(create_new_game(game_id))
-            db.session.commit()
+        emit("game changed", json.dumps({}), room=game_id)
     else:
         flash_io("You are not a player in this game.", "danger")

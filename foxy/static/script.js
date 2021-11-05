@@ -32,10 +32,12 @@ socket.on('error', (error) => console.error('SocketIO error ', error));
 socket.on('connect', () => socket.emit('get game', JSON.stringify({id: game_id})));
 // When receiving the game state, show it
 socket.on('game', (game) => Queue.enqueue(() => showState(JSON.parse(game))));
+// When receiving info that game changed, request the game state
+socket.on('game changed', () => socket.emit('get game', JSON.stringify({id: game_id})));
 // When receiving the game state update, update it with animations
 socket.on('game state', (game) => Queue.enqueue(() => updateState(JSON.parse(game))));
 // Show alert messages
-socket.on('message', (data) => showMessage(JSON.parse(data).text, JSON.parse(data).category));
+socket.on('message', (data) => Queue.enqueue(() => showMessage(JSON.parse(data).text, JSON.parse(data).category)));
 // If game ended, show the result overlay
 socket.on('game ended', (data) => Queue.enqueue(() => showResult(JSON.parse(data))));
 // If match ended, show the result overlay

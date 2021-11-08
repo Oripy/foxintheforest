@@ -144,7 +144,7 @@ async function showState(game) {
     current_plays = game.plays.length;
   }
 
-  if (current_plays < game.plays.length-2) {
+  if (current_plays < game.plays.length) {
     document.getElementById("playingarea").style.filter = "saturate(50%)";
   } else {
     document.getElementById("playingarea").style.filter = "saturate(100%)";
@@ -326,7 +326,7 @@ async function updateState(game) {
       trick = [];
     }
     highlightPlayer(next_player);
-    if (index < game.plays.length-2) {
+    if (index < game.plays.length-1) {
       document.getElementById("playingarea").style.filter = "saturate(50%)";
     } else {
       document.getElementById("playingarea").style.filter = "saturate(100%)";

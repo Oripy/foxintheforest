@@ -64,6 +64,7 @@ class Games(db.Model):
     match = db.relationship("Matches", foreign_keys=[match_id])
     status = db.Column(db.Integer, nullable=False, default=0)
     game = db.Column(db.String(1000))
+    lock = db.Column(db.Boolean, default=False, nullable=False)
 
     def __repr__(self):
         status = ["created", "started", "finished"][self.status]

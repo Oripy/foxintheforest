@@ -179,7 +179,9 @@ def get_game(data):
     if match_data.second_player:
         if match_data.second_player.username in AI_dict.keys():
             state = foxintheforest.get_state_from_game(game_state)
-            while state["current_player"] == 1 and game_data.status != 2:
+            while state["current_player"] == 1 and game_data.status != 2 and not game_data.lock:
+                game_data.lock = True
+                db.session.commit()
                 ai_play = AI_dict[match_data.second_player.username].ai_play(
                     foxintheforest.get_player_game(game_state, 1))
                 game_state = foxintheforest.play(game_state, ai_play)
@@ -187,6 +189,7 @@ def get_game(data):
                 if len(state["discards"][0]) + len(state["discards"][1]) == 26:
                     game_data.status = 2
                 game_data.game = json.dumps(game_state)
+                game_data.lock = False
                 db.session.commit()
                 emit("game changed", json.dumps({}), room=game_id)
     if game_data.status == 2:

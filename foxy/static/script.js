@@ -364,8 +364,10 @@ function trickwinner(leading_player, cardp0, cardp1, trump) {
 function playCard(event) {
   if (event.target && event.target.matches(".playingcard")) {
     if ((window.matchMedia("(hover: hover)").matches) || (event.target.classList.contains("sel"))) {
-      let card_id = event.target.id;
-      socket.emit("play", JSON.stringify({id: game_id, play: card_id, player: player}))
+      if (current_game.plays.length == current_plays) {
+        let card_id = event.target.id;
+        socket.emit("play", JSON.stringify({id: game_id, play: card_id, player: player}))
+      }
       if (window.matchMedia("(hover: none)").matches) {
         let value = parseInt(event.target.id.slice(0, -1));
         if ([1,3,5,7,9,11].includes(value)) {

@@ -222,13 +222,13 @@ async function showState(game) {
   setPlayerHand(player_hand);
   sortPlayerHand();
   setOpponentHand(opponent_hand);
-  document.getElementById('pt').replaceWith(getCard('empty', 'pt'));
-  document.getElementById('ot').replaceWith(getCard('empty', 'ot'));
+  document.getElementById('pt').children[0].replaceWith(getCard('empty', 'pt'));
+  document.getElementById('ot').children[0].replaceWith(getCard('empty', 'ot'));
   for (let p of trick) {
     if (p[0] == player) {
-      document.getElementById('pt').replaceWith(getCard(p[1], 'pt'));
+      document.getElementById('pt').children[0].replaceWith(getCard(p[1], 'pt'));
     } else {
-      document.getElementById('ot').replaceWith(getCard(p[1], 'ot'));
+      document.getElementById('ot').children[0].replaceWith(getCard(p[1], 'ot'));
     }
   }
   highlightPlayer(next_player);
@@ -515,20 +515,18 @@ async function sortPlayerHand() {
 
 // Animate a card from the player hand to the trick
 async function playerPlayCard(c) {
-  let target = document.getElementById("pt");
+  let target = document.getElementById("pt").children[0];
   let card = document.getElementById(cardToId(c));
   await moveCard(card, card, target, false, true, true);
-  card.id = "pt";
   card.classList.remove("selectable");
 }
 
 // Animate a card from the opponent hand to the trick, reveling it in the process
 async function opponentPlayCard(c) {
   let hand = document.getElementById("opponenthand").children[0];
-  let target = document.getElementById("ot");
+  let target = document.getElementById("ot").children[0];
   let card = getCard(c, cardToId(c));
   await moveCard(card, hand, target, false, true, true);
-  card.id = "ot";
   hand.removeChild(hand.children[0]);
 }
 
@@ -608,8 +606,8 @@ async function clearTrick(winner) {
   } else {
     target = document.getElementById("opponentname");
   }
-  let card1 = document.getElementById("ot");
-  let card2 = document.getElementById("pt");
+  let card1 = document.getElementById("ot").children[0];
+  let card2 = document.getElementById("pt").children[0];
   moveCard(card1, card1, target);
   await moveCard(card2, card2, target);
   card1.replaceWith(getCard("empty", "ot"));

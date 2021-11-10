@@ -225,18 +225,20 @@ def get_game(data):
                 db.session.commit()
                 emit("game changed", json.dumps({}), room=game_id)
     if game_data.status == 2:
-        state = foxintheforest.get_state_from_game(json.loads(game_data.game))
-        match_data.score_first_player += state["score"][0]
-        match_data.score_second_player += state["score"][1]
-        emit("game ended", json.dumps({"score": state["score"], "discards": state["discards"]}))
-        if (match_data.score_first_player >= 21 or match_data.score_second_player >= 21):
-            match_data.status = 2
+        if match_data.status != 2:
+            state = foxintheforest.get_state_from_game(json.loads(game_data.game))
+            match_data.score_first_player += state["score"][0]
+            match_data.score_second_player += state["score"][1]
+            emit("game ended", json.dumps({"score": state["score"], "discards": state["discards"]}))
+            if (match_data.score_first_player >= 21 or match_data.score_second_player >= 21):
+                match_data.status = 2
+            else:
+                db.session.add(create_new_game(game_id))
+            db.session.commit()
+        if match_data.status == 2:
             emit("match ended", json.dumps({"score": [match_data.score_first_player,
                                                         match_data.score_second_player]}))
             flash_io('Game finished.', 'danger')
-        else:
-            db.session.add(create_new_game(game_id))
-        db.session.commit()
     return
 
 @socketio.on('play')

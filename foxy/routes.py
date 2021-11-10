@@ -8,6 +8,7 @@
             create a new game,
             play on games where the login user is one of the player,
             join games created by other users
+        /leaderboard: a list of all players with their overall results
         /new: create a new game
         /game: connect to an existing game
     SocketIO "routes":
@@ -102,6 +103,37 @@ def lobby():
     own_games = Matches.query.filter(
         (((Matches.first_player_id==current_user.id)|(Matches.second_player_id==current_user.id))&(Matches.status<2)))
     return render_template('lobby.html', open_games=open_games, own_games=own_games)
+
+@app.route("/leaderboard", methods=['GET'])
+def leaderboard():
+    """List all players and their overall result"""
+    finished_games = Matches.query.filter((Matches.status==2))
+    player_list = {}
+    for game in finished_games:
+        if not game.first_player.username in player_list:
+            player_list[game.first_player.username] = [0, 0]
+        if not game.second_player.username in player_list:
+            player_list[game.second_player.username] = [0, 0]
+        if (game.score_first_player > game.score_second_player):
+            player_list[game.first_player.username][0] += 1
+            player_list[game.second_player.username][1] += 1
+        else:
+            player_list[game.first_player.username][1] += 1
+            player_list[game.second_player.username][0] += 1
+    board = []
+    for player, values in player_list.items():
+        ratio = values[0]/(values[0] + values[1])
+        board.append([0, player, values[0], values[1], 100*ratio])
+    board.sort(key=lambda x: -x[4])
+    if (len(board) > 0):
+        prev_ratio = board[0][4]
+        prev_rank = 1
+        for rank, line in enumerate(board):
+            if prev_ratio != line[4]:
+                prev_ratio = line[4]
+                prev_rank = rank + 1
+            line[0] = prev_rank
+    return render_template('leaderboard.html', board=board)
 
 @app.route("/new", methods=['POST'])
 @login_required

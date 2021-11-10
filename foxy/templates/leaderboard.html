@@ -1,0 +1,28 @@
+{% extends 'layout.html' %}
+{% block content %}
+<table>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Player</th>
+      <th>Nb won</th>
+      <th>Nb lost</th>
+      <th>Ratio</th></tr>
+  </thead>
+  <tbody>
+  {% for element in board %}
+    <tr>
+      <td>{{ element.0 }}</td>
+      {% if current_user.username == element.1 %}
+        <td><strong>{{ element.1 }}</strong></td>
+      {% else %}
+        <td>{{ element.1 }}</td>
+      {% endif %}
+      <td>{{ element.2 }}</td>
+      <td>{{ element.3 }}</td>
+      <td>{{ "%.0f"|format(element.4) }}%</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

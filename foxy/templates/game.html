@@ -11,27 +11,32 @@
     <div id="decks">
         <div id="deck" class="playingcard back" title="Deck">&nbsp;<br />&nbsp;</div>
         <div id="trump" title="Trump card">
-            <div id="null" class="playingcard empty">&nbsp;<br />&nbsp;</div>
+            <div class="playingcard empty background">&nbsp;<br />&nbsp;</div>
+            <div class="playingcard empty">&nbsp;<br />&nbsp;</div>
         </div>
     </div>
     <div id="trick">
         <div id="ot" title="Opponent card">
-            <div id="null" class="playingcard empty">&nbsp;<br />&nbsp;</div>
-        </div><br />&nbsp;<br />
+            <div class="playingcard empty background">&nbsp;<br />&nbsp;</div>
+            <div class="playingcard empty">&nbsp;<br />&nbsp;</div>
+        </div>
         <div id="pt" title="Your card">
-            <div id="null" class="playingcard empty">&nbsp;<br />&nbsp;</div>
+            <div class="playingcard empty background">&nbsp;<br />&nbsp;</div>
+            <div class="playingcard empty">&nbsp;<br />&nbsp;</div>
         </div>
     </div>
     <div id="opponenthand" title="Opponent hand"></div>
     <div id="playerhand" title="Your hand"></div>
     <div class="gameinfo opponent">
         <div id="olasttrick" class="preview"></div>
-        <div id="opponentname">{{ opponent }}</div>
         <div id="opponentscore" title="Opponent number of tricks won">0</div>
+        <div id="opponentname">{{ opponent }}</div>
+        <div id="opponentmatchscore" title="Opponent match score"></div>
     </div>
     <div class="gameinfo player">
-        <div id="playerscore" title="Your number of tricks won">0</div>
+        <div id="playermatchscore" title="Your match score"></div>
         <div id="playername">{{ current_user.username }}</div>
+        <div id="playerscore" title="Your number of tricks won">0</div>
         <div id="plasttrick" class="preview"></div>
     </div>
     <div class="playingcard help hidden" id="help1">

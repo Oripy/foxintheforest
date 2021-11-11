@@ -31,7 +31,7 @@ socket.on('error', (error) => console.error('SocketIO error ', error));
 // When socket connected, request for the game state
 socket.on('connect', () => socket.emit('get game', JSON.stringify({id: game_id})));
 // When receiving the game state, show it
-socket.on('game', (game) => Queue.enqueue(() => showState(JSON.parse(game))));
+socket.on('game', (game, score) => Queue.enqueue(() => showState(JSON.parse(game), JSON.parse(score))));
 // When receiving info that game changed, request the game state
 socket.on('game changed', () => socket.emit('get game', JSON.stringify({id: game_id})));
 // When receiving the game state update, update it with animations
@@ -126,7 +126,7 @@ function highlightPlayer(p) {
 }
 
 // Change the view to display the given state
-async function showState(game) {
+async function showState(game, score) {
   console.log(game);
   player = parseInt(game.player);
   current_game = game;
@@ -217,20 +217,24 @@ async function showState(game) {
       trick = [];
     }
   }
+  document.getElementById("plasttrick").innerHTML = "";
+  document.getElementById("olasttrick").innerHTML = "";
   setTrumpCard(trump_card);
   console.log(player_hand);
   setPlayerHand(player_hand);
   sortPlayerHand();
   setOpponentHand(opponent_hand);
-  document.getElementById('pt').children[0].replaceWith(getCard('empty', 'pt'));
-  document.getElementById('ot').children[0].replaceWith(getCard('empty', 'ot'));
+  document.getElementById('pt').children[1].replaceWith(getCard('empty'));
+  document.getElementById('ot').children[1].replaceWith(getCard('empty'));
   for (let p of trick) {
     if (p[0] == player) {
-      document.getElementById('pt').children[0].replaceWith(getCard(p[1], 'pt'));
+      document.getElementById('pt').children[1].replaceWith(getCard(p[1], cardToId(p[1])));
     } else {
-      document.getElementById('ot').children[0].replaceWith(getCard(p[1], 'ot'));
+      document.getElementById('ot').children[1].replaceWith(getCard(p[1], cardToId(p[1])));
     }
   }
+  document.getElementById("opponentmatchscore").innerHTML = score[1 - player];
+  document.getElementById("playermatchscore").innerHTML = score[player];
   highlightPlayer(next_player);
   if (game.plays.length > current_plays) {
     Queue.enqueue(() => updateState(game));
@@ -434,7 +438,7 @@ async function moveCard(card, start, target, stay=false, replace=false, remove_s
 
 // Show the given trump card
 function setTrumpCard(trump_card) {
-  let trump = document.getElementById("trump").children[0];
+  let trump = document.getElementById("trump").children[1];
   if (trump_card != null) {
     let id = cardToId(trump_card);
     if (trump.id != id) {
@@ -515,7 +519,7 @@ async function sortPlayerHand() {
 
 // Animate a card from the player hand to the trick
 async function playerPlayCard(c) {
-  let target = document.getElementById("pt").children[0];
+  let target = document.getElementById("pt").children[1];
   let card = document.getElementById(cardToId(c));
   await moveCard(card, card, target, false, true, true);
   card.classList.remove("selectable");
@@ -524,7 +528,7 @@ async function playerPlayCard(c) {
 // Animate a card from the opponent hand to the trick, reveling it in the process
 async function opponentPlayCard(c) {
   let hand = document.getElementById("opponenthand").children[0];
-  let target = document.getElementById("ot").children[0];
+  let target = document.getElementById("ot").children[1];
   let card = getCard(c, cardToId(c));
   await moveCard(card, hand, target, false, true, true);
   hand.removeChild(hand.children[0]);
@@ -565,27 +569,25 @@ async function opponentDiscardCard() {
 // Animate a card from the trump card to the player's hand
 async function playerDrawTrump() {
   let playerhand = document.getElementById("playerhand");
-  let trump = document.getElementById("trump").children[0];
-  let c =  IdToCard(trump.id);
-  let card = getCard(c, cardToId(c));
-  card.classList.add("selectable");
-  await moveCard(card, trump, playerhand, true);
-  trump.replaceWith(getCard("empty", "empty"));
+  let trump = document.getElementById("trump").children[1];
+  document.getElementById("trump").appendChild(getCard("empty"));
+  await moveCard(trump, trump, playerhand, true);
+  trump.classList.add("selectable");
 }
 
 // Animate a card from the trump card to the opponent's hand
 async function opponentDrawTrump() {
   let opponenthand = document.getElementById("opponenthand");
-  let trump = document.getElementById("trump").children[0];
-  let card = getCard("back");
-  await moveCard(card, trump, opponenthand, true);
-  trump.replaceWith(getCard("empty", "empty"));
+  let trump = document.getElementById("trump").children[1];
+  document.getElementById("trump").appendChild(getCard("empty"));
+  await moveCard(trump, trump, opponenthand, true);
+  trump.replaceWith(getCard("back"));
 }
 
 // Animate a card from the player hand to the trump card
 async function playerPlayTrump(c) {
   let source = document.getElementById(cardToId(c));
-  let trump = document.getElementById("trump").children[0];
+  let trump = document.getElementById("trump").children[1];
   let card = getCard(c, cardToId(c));
   await moveCard(card, source, trump, false, true, true);
 }
@@ -593,25 +595,27 @@ async function playerPlayTrump(c) {
 // Animate a card from the opponent hand to the trump card
 async function opponentPlayTrump(c) {
   let hand = document.getElementById("opponenthand").children[0];
-  let trump = document.getElementById("trump").children[0];
+  let trump = document.getElementById("trump").children[1];
   let card = getCard(c, cardToId(c));
   await moveCard(card, hand, trump, false, true, true);
 }
 
 // Remove both cards from the tricks, animating toward the player who won the trick
 async function clearTrick(winner) {
+  document.getElementById("plasttrick").innerHTML = "";
+  document.getElementById("olasttrick").innerHTML = "";
   let target;
   if (winner == player) {
-    target = document.getElementById("playername");
+    target = document.getElementById("plasttrick");
   } else {
-    target = document.getElementById("opponentname");
+    target = document.getElementById("olasttrick");
   }
-  let card1 = document.getElementById("ot").children[0];
-  let card2 = document.getElementById("pt").children[0];
-  moveCard(card1, card1, target);
-  await moveCard(card2, card2, target);
-  card1.replaceWith(getCard("empty", "ot"));
-  card2.replaceWith(getCard("empty", "pt"));
+  let card1 = document.getElementById("ot").children[1];
+  let card2 = document.getElementById("pt").children[1];
+  document.getElementById("ot").appendChild(getCard("empty"));
+  document.getElementById("pt").appendChild(getCard("empty"));
+  moveCard(card1, card1, target, stay=true);
+  await moveCard(card2, card2, target, stay=true);
   if (winner == player) {
     document.getElementById("playerscore").innerHTML++;
   } else {

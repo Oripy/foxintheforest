@@ -207,7 +207,8 @@ def get_game(data):
         flash_io('You are not a player in this game.', 'danger')
         return
     game_state = json.loads(game_data.game)
-    emit("game", json.dumps(foxintheforest.get_player_game(game_state, player)))
+    emit("game", (json.dumps(foxintheforest.get_player_game(game_state, player)),
+                  json.dumps([match_data.score_first_player, match_data.score_second_player])))
     if match_data.second_player:
         if match_data.second_player.username in AI_dict.keys():
             state = foxintheforest.get_state_from_game(game_state)

@@ -37,13 +37,13 @@
 #playerhand
 {
     text-align: center;
-	grid-area: playerinfo / playerinfo / playerhand / help;
+	grid-area: playerhand;
 }
 
 #opponenthand
 {
     text-align: center;
-	grid-area: opponentinfo / opponentinfo / opponenthand / help;
+	grid-area: opponenthand;
 }
 
 #decks
@@ -266,4 +266,14 @@
   font-family: "Arial Black", Gadget, sans-serif;
   margin: auto;
   text-align: center;
+}
+
+#opponentmatchscore, #playermatchscore {
+	font-weight: bold;
+	font-size: 50px;
+}
+
+.background {
+	position: absolute;
+	z-index: -1;
 }

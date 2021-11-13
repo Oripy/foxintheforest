@@ -110,7 +110,7 @@ def get_state_from_game(game: Game) -> State:
         state["score"] = get_score(state)
     return state
 
-def do_step(state: State, step: Play, 
+def do_step(state: State, step: Play,
             special_type: Union[int, None]) -> Tuple[State, Union[int, None]]:
     """Apply a play to a State and returns the next State"""
     state["plays"].append(step)

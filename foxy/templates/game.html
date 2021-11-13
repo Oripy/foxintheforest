@@ -9,59 +9,59 @@
         <div id="messagecontent"></div>
     </div>
     <div id="decks">
-        <div id="deck" class="playingcard back" title="Deck">&nbsp;<br />&nbsp;</div>
-        <div id="trump" title="Trump card">
+        <div id="deck" class="playingcard back" title="{{ _('Deck') }}">&nbsp;<br />&nbsp;</div>
+        <div id="trump" title="{{ _('Trump card') }}">
             <div class="playingcard empty background">&nbsp;<br />&nbsp;</div>
             <div class="playingcard empty">&nbsp;<br />&nbsp;</div>
         </div>
     </div>
     <div id="trick">
-        <div id="ot" title="Opponent card">
+        <div id="ot" title="{{ _('Opponent card') }}">
             <div class="playingcard empty background">&nbsp;<br />&nbsp;</div>
             <div class="playingcard empty">&nbsp;<br />&nbsp;</div>
         </div>
-        <div id="pt" title="Your card">
+        <div id="pt" title="{{ _('Your card') }}">
             <div class="playingcard empty background">&nbsp;<br />&nbsp;</div>
             <div class="playingcard empty">&nbsp;<br />&nbsp;</div>
         </div>
     </div>
-    <div id="opponenthand" title="Opponent hand"></div>
-    <div id="playerhand" title="Your hand"></div>
+    <div id="opponenthand" title="{{ _('Opponent hand') }}"></div>
+    <div id="playerhand" title="{{ _('Your hand') }}"></div>
     <div class="gameinfo opponent">
         <div id="olasttrick" class="preview"></div>
-        <div id="opponentscore" title="Opponent number of tricks won">0</div>
+        <div id="opponentscore" title="{{ _('Opponent number of tricks won') }}">0</div>
         <div id="opponentname">{{ opponent }}</div>
-        <div id="opponentmatchscore" title="Opponent match score"></div>
+        <div id="opponentmatchscore" title="{{ _('Opponent match score') }}"></div>
     </div>
     <div class="gameinfo player">
-        <div id="playermatchscore" title="Your match score"></div>
+        <div id="playermatchscore" title="{{ _('Your match score') }}"></div>
         <div id="playername">{{ current_user.username }}</div>
-        <div id="playerscore" title="Your number of tricks won">0</div>
+        <div id="playerscore" title="{{ _('Your number of tricks won') }}">0</div>
         <div id="plasttrick" class="preview"></div>
     </div>
     <div class="playingcard help hidden" id="help1">
         1<br />
-        <p class="helptext">If you play this and lose the trick, you lead the next trick.</p>
+        <p class="helptext">{{ _('If you play this and lose the trick, you lead the next trick.') }}</p>
     </div>
     <div class="playingcard help hidden" id="help3">
         3<br />
-        <p class="helptext">When you play this, you may exchange the trump card with a card from your hand.</p>
+        <p class="helptext">{{ _('When you play this, you may exchange the trump card with a card from your hand.') }}</p>
     </div>
     <div class="playingcard help hidden" id="help5">
         5<br />
-        <p class="helptext">When you play this, draw one card, then return any one card to the bottom of the deck face down.</p>
+        <p class="helptext">{{ _('When you play this, draw one card, then return any one card to the bottom of the deck face down.') }}</p>
     </div>
     <div class="playingcard help hidden" id="help7">
         7<br />
-        <p class="helptext">Every 7 won is worth 1 point.</p>
+        <p class="helptext">{{ _('Every 7 won is worth 1 point.') }}</p>
     </div>
     <div class="playingcard help hidden" id="help9">
         9<br />
-        <p class="helptext">When determining the winner of a trick with only one 9, treat that 9 as if it were the trump suit.</p>
+        <p class="helptext">{{ _('When determining the winner of a trick with only one 9, treat that 9 as if it were the trump suit.') }}</p>
     </div>
     <div class="playingcard help hidden" id="help11">
         11<br />
-        <p class="helptext">When you lead this, if your opponent has this suit, they must play either the 1 of this suit or their highest card of this suit.</p>
+        <p class="helptext">{{ _('When you lead this, if your opponent has this suit, they must play either the 1 of this suit or their highest card of this suit.') }}</p>
     </div>
     <div id="history"></div>
 </div>

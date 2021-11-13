@@ -17,14 +17,14 @@
     <input class="menu-btn" type="checkbox" id="menu-btn" />
     <label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
     <ul class="menu">
-      <li><a href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+      <li><a href="{{ url_for('leaderboard') }}">{{ _('Leaderboard') }}</a></li>
       {% if current_user.is_authenticated %}
-        <li><a href="{{ url_for('lobby') }}">Lobby</a></li>
+        <li><a href="{{ url_for('lobby') }}">{{ _('Lobby') }}</a></li>
         <li><a href="#">{{ current_user.username }}</a></li>
-        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        <li><a href="{{ url_for('logout') }}">{{ _('Logout') }}</a></li>
       {% else %}
-        <li><a href="{{ url_for('login') }}">Login</a></li>
-        <li><a href="{{ url_for('register') }}">Register</a></li>
+        <li><a href="{{ url_for('login') }}">{{ _('Login') }}</a></li>
+        <li><a href="{{ url_for('register') }}">{{ _('Register') }}</a></li>
       {% endif %}
     </ul>
   </header>

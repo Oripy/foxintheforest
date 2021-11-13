@@ -1,0 +1,248 @@
+# French translations for PROJECT.
+# Copyright (C) 2021 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2021-11-12 12:26+0100\n"
+"PO-Revision-Date: 2021-11-12 11:50+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: foxy/__init__.py:24
+msgid "Please log in to access this page."
+msgstr "Se connecter pour accéder à cette page."
+
+#: foxy/forms.py:16 foxy/forms.py:35
+msgid "Username"
+msgstr "Pseudo"
+
+#: foxy/forms.py:18 foxy/forms.py:37
+msgid "Password"
+msgstr "Mot de passe"
+
+#: foxy/forms.py:19
+msgid "Confirm Password"
+msgstr "Répéter le mot de passe"
+
+#: foxy/forms.py:21
+msgid "Sign Up"
+msgstr "Se connecter"
+
+#: foxy/forms.py:27
+msgid "Username already exists."
+msgstr "Ce Pseudo existe déjà."
+
+#: foxy/forms.py:38
+msgid "Remember Me"
+msgstr "Se souvenir de moi"
+
+#: foxy/forms.py:39 foxy/templates/layout.html:26
+msgid "Login"
+msgstr "Connexion"
+
+#: foxy/routes.py:69
+msgid "Account created for %(username)!"
+msgstr "Compte créé pour %(username) !"
+
+#: foxy/routes.py:84
+msgid "Welcome back %(username)!"
+msgstr "Re-bonjour %(username) !"
+
+#: foxy/routes.py:86
+msgid "Login unsuccessful. Please check username and password."
+msgstr "Echec de connexion. Vérifier le pseudo et mot de passe."
+
+#: foxy/routes.py:156
+msgid "This AI does not exists."
+msgstr "Cette IA n'existe pas."
+
+#: foxy/routes.py:176 foxy/routes.py:202 foxy/routes.py:257
+msgid "This game does not exists."
+msgstr "Cette partie n'existe pas."
+
+#: foxy/routes.py:189 foxy/routes.py:208 foxy/routes.py:275
+msgid "You are not a player in this game."
+msgstr "Tu n'es pas un joueur dans cette partie."
+
+#: foxy/routes.py:243
+msgid "Game finished."
+msgstr "Partie terminée."
+
+#: foxy/templates/game.html:12
+msgid "Deck"
+msgstr "Pioche"
+
+#: foxy/templates/game.html:13
+msgid "Trump card"
+msgstr "Carte d'Atout"
+
+#: foxy/templates/game.html:19
+msgid "Opponent card"
+msgstr "Carte de l'adversaire"
+
+#: foxy/templates/game.html:23
+msgid "Your card"
+msgstr "Ta carte"
+
+#: foxy/templates/game.html:28
+msgid "Opponent hand"
+msgstr "Main de l'adversaire"
+
+#: foxy/templates/game.html:29
+msgid "Your hand"
+msgstr "Ta main"
+
+#: foxy/templates/game.html:32
+msgid "Opponent number of tricks won"
+msgstr "Nombre de plis gagnés par l'adversaire"
+
+#: foxy/templates/game.html:34
+msgid "Opponent match score"
+msgstr "Score de l'adversaire"
+
+#: foxy/templates/game.html:37
+msgid "Your match score"
+msgstr "Ton score"
+
+#: foxy/templates/game.html:39
+msgid "Your number of tricks won"
+msgstr "Nombre de plis gagnés"
+
+#: foxy/templates/game.html:44
+msgid "If you play this and lose the trick, you lead the next trick."
+msgstr "Si tu perds le pli avec cette carte, tu commences le pli suivant."
+
+#: foxy/templates/game.html:48
+msgid ""
+"When you play this, you may exchange the trump card with a card from your"
+" hand."
+msgstr "Permet de changer la carte d'Atout avec une carte de votre main."
+
+#: foxy/templates/game.html:52
+msgid ""
+"When you play this, draw one card, then return any one card to the bottom"
+" of the deck face down."
+msgstr "Piocher une carte puis remettre une carte au fond de la pioche."
+
+#: foxy/templates/game.html:56
+msgid "Every 7 won is worth 1 point."
+msgstr "Chanque 7 remporté donne 1 point en fin de manche."
+
+#: foxy/templates/game.html:60
+msgid ""
+"When determining the winner of a trick with only one 9, treat that 9 as "
+"if it were the trump suit."
+msgstr ""
+"Si cette carte est le seul 9 d'un pli, elle est considérée comme un 9 "
+"d'Atout"
+
+#: foxy/templates/game.html:64
+msgid ""
+"When you lead this, if your opponent has this suit, they must play either"
+" the 1 of this suit or their highest card of this suit."
+msgstr ""
+"Si cette carte est jouée en premier, l'autre joueur doit poser sa plus "
+"forte carte ou le 1 de cette couleur."
+
+#: foxy/templates/layout.html:20
+msgid "Leaderboard"
+msgstr "Classement"
+
+#: foxy/templates/layout.html:22
+msgid "Lobby"
+msgstr "Accueil"
+
+#: foxy/templates/layout.html:24
+msgid "Logout"
+msgstr "Déconnexion"
+
+#: foxy/templates/layout.html:27
+msgid "Register"
+msgstr "S'enregistrer"
+
+#: foxy/templates/leaderboard.html:6
+msgid "Rank"
+msgstr "Rang"
+
+#: foxy/templates/leaderboard.html:7
+msgid "Player"
+msgstr "Joueur"
+
+#: foxy/templates/leaderboard.html:8
+msgid "Nb won"
+msgstr "Nb victoires"
+
+#: foxy/templates/leaderboard.html:9
+msgid "Nb lost"
+msgstr "Nb défaites"
+
+#: foxy/templates/leaderboard.html:10
+msgid "Ratio"
+msgstr "Ratio"
+
+#: foxy/templates/lobby.html:10
+msgid "Create New Game"
+msgstr "Nouvelle partie"
+
+#: foxy/templates/lobby.html:14
+msgid "Game against TheBad"
+msgstr "Partie contre TheBad"
+
+#: foxy/templates/lobby.html:15
+msgid "New Game against TheBad"
+msgstr "Nouvelle partie contre l'IA TheBad"
+
+#: foxy/templates/lobby.html:19
+msgid "Game against TheGood"
+msgstr "Partie contre TheGood"
+
+#: foxy/templates/lobby.html:20
+msgid "New Game against TheGood"
+msgstr "Nouvelle partie contre l'IA TheGood"
+
+#: foxy/templates/lobby.html:24
+msgid "Your games"
+msgstr "Vos parties"
+
+#: foxy/templates/lobby.html:26 foxy/templates/lobby.html:32
+msgid "Players:"
+msgstr "Joueurs :"
+
+#: foxy/templates/lobby.html:26 foxy/templates/lobby.html:32
+msgid "None"
+msgstr "Aucun"
+
+#: foxy/templates/lobby.html:26 foxy/templates/lobby.html:32
+msgid "Join"
+msgstr "Rejoindre"
+
+#: foxy/templates/lobby.html:30
+msgid "Open games"
+msgstr "Jeux ouverts"
+
+#: foxy/templates/login.html:31
+msgid "Don't have a username?"
+msgstr "Pas de compte ?"
+
+#: foxy/templates/login.html:31
+msgid "Create one!"
+msgstr "Crée-en un !"
+
+#: foxy/templates/register.html:42
+msgid "Already have a username?"
+msgstr "Déjà un compte ?"
+
+#: foxy/templates/register.html:42
+msgid "Log-in!"
+msgstr "Connecte-toi !"
+

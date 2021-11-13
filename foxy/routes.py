@@ -20,6 +20,7 @@ from typing import Callable, Union
 from flask import flash, render_template, url_for, request, json, redirect
 from flask_login import login_user, logout_user, current_user, login_required
 from flask_socketio import disconnect, emit, join_room
+from flask_babel import _
 
 from foxy import app, db, bcrypt, socketio
 from foxy.forms import RegistrationForm, LoginForm
@@ -65,7 +66,7 @@ def register():
         user = User(username=form.username.data, password=hashed_password)
         db.session.add(user)
         db.session.commit()
-        flash(f'Account created for {form.username.data}!', 'success')
+        flash(_('Account created for %(username)s!', username=form.username.data), 'success')
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
@@ -80,9 +81,9 @@ def login():
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            flash(f'Welcome back {form.username.data}!', 'success')
+            flash(_('Welcome back %(username)s!', username=form.username.data), 'success')
             return redirect(next_page) if next_page else redirect(url_for('lobby'))
-        flash('Login unsuccessful. Please check username and password.', 'danger')
+        flash(_('Login unsuccessful. Please check username and password.'), 'danger')
     return render_template('login.html', form=form)
 
 @app.route("/logout")
@@ -152,7 +153,7 @@ def new():
             db.session.flush()
             game_db = create_new_game(match_db.id)
         else:
-            flash('This AI does not exists.', 'danger')
+            flash(_('This AI does not exists.'), 'danger')
             return redirect(url_for('lobby'))
     else:
         match_db = Matches(name=request.form['gamename'],
@@ -172,7 +173,7 @@ def game():
     game_id = request.args.get("id")
     game_state = Matches.query.filter_by(id=game_id).first()
     if game_state is None:
-        flash('This game does not exists.', 'danger')
+        flash(_('This game does not exists.'), 'danger')
         return redirect(url_for('lobby'))
     if game_state.first_player_id == current_user.id:
         return render_template('game.html', id=game_id,
@@ -185,7 +186,7 @@ def game():
         game_state.status = 1
         db.session.commit()
         return render_template('game.html', id=game_id, opponent=game_state.first_player.username)
-    flash('You are not a player in this game.', 'danger')
+    flash(_('You are not a player in this game.'), 'danger')
     return redirect(url_for('lobby'))
 
 @socketio.on('get game')
@@ -198,13 +199,13 @@ def get_game(data):
     match_data = Matches.query.filter_by(id=game_id).first()
     game_data = Games.query.filter_by(match_id=game_id).order_by(Games.date_created.desc()).first()
     if game_data is None:
-        flash_io('This game does not exists.', 'danger')
+        flash_io(_('This game does not exists.'), 'danger')
     elif match_data.first_player_id == current_user.id:
         player = 0
     elif match_data.second_player_id == current_user.id:
         player = 1
     else:
-        flash_io('You are not a player in this game.', 'danger')
+        flash_io(_('You are not a player in this game.'), 'danger')
         return
     game_state = json.loads(game_data.game)
     emit("game", (json.dumps(foxintheforest.get_player_game(game_state, player)),
@@ -239,7 +240,7 @@ def get_game(data):
         if match_data.status == 2:
             emit("match ended", json.dumps({"score": [match_data.score_first_player,
                                                         match_data.score_second_player]}))
-            flash_io('Game finished.', 'danger')
+            flash_io(_('Game finished.'), 'danger')
     return
 
 @socketio.on('play')
@@ -253,7 +254,7 @@ def play(data):
     match_data = Matches.query.filter_by(id=game_id).first()
     game_data = Games.query.filter_by(match_id=game_id).order_by(Games.date_created.desc()).first()
     if game_data is None:
-        flash_io("This game does not exists.", "danger")
+        flash_io(_("This game does not exists."), "danger")
     elif (match_data.first_player_id == current_user.id \
       or match_data.second_player_id == current_user.id) \
       and (match_data.second_player_id is not None) and (game_data.status == 1):
@@ -271,4 +272,4 @@ def play(data):
                 db.session.commit()
         emit("game changed", json.dumps({}), room=game_id)
     else:
-        flash_io("You are not a player in this game.", "danger")
+        flash_io(_("You are not a player in this game."), "danger")

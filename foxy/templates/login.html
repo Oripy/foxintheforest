@@ -28,7 +28,7 @@
     {{ form.submit() }}
   </form>
   <p>
-    Don't have a username? <a href="{{ url_for('register') }}">Create one!</a>
+    {{ _("Don't have a username?") }} <a href="{{ url_for('register') }}">{{ _('Create one!') }}</a>
   </p>
 </div>
 {% endblock content %}

@@ -39,7 +39,7 @@
     {{ form.submit() }}
   </form>
   <p>
-    Already have a username? <a href="{{ url_for('login') }}">Log-in!</a>
+    {{ _('Already have a username?') }} <a href="{{ url_for('login') }}">{{ _('Log-in!') }}</a>
   </p>
 </div>
 

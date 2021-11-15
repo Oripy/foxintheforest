@@ -54,6 +54,20 @@ Install all required packages
 python -m pip install -r requirements/prod.txt
 ```
 
+Config file should look like this in ```instance/config.py```
+
+```
+DEBUG = False
+SECRET_KEY = "your secret key"
+
+SQLALCHEMY_DATABASE_URI = "sqlite:///database.db" # path to you Database
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+SESSION_COOKIE_SAMESITE = "Strict"
+
+LANGUAGES = ['en', 'fr']
+```
+
 ### Running the program
 
 Just use `python run.py`.

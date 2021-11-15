@@ -4,13 +4,11 @@
 
 	display: grid;
 	grid-template-columns: [col-start] 1fr 4fr 1fr [col-end];
-	grid-template-rows: [row-start] 1fr auto 1fr [row-end] 1fr;
+	grid-template-rows: [row-start] 1fr auto 1fr [row-end];
     grid-template-areas:
     "opponentinfo opponenthand ."
     "decks trick help"
-    "playerinfo playerhand ."
-    "history history history";
-  	/* grid-row-gap: 2%; */
+    "playerinfo playerhand .";
 
 	justify-items: center;
     align-items: center;

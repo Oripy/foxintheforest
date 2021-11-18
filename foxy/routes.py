@@ -211,6 +211,7 @@ def get_game(data):
     game_state = json.loads(game_data.game)
     emit("game", (json.dumps(foxintheforest.get_player_game(game_state, player)),
                   json.dumps([match_data.score_first_player, match_data.score_second_player])))
+    socketio.sleep(0)
     if match_data.second_player:
         if match_data.second_player.username in AI_dict.keys():
             state = foxintheforest.get_state_from_game(game_state)
@@ -227,6 +228,7 @@ def get_game(data):
                 game_data.lock = False
                 db.session.commit()
                 emit("game changed", json.dumps({}), room=game_id)
+                socketio.sleep(0)
     if game_data.status == 2:
         if match_data.status != 2:
             state = foxintheforest.get_state_from_game(json.loads(game_data.game))

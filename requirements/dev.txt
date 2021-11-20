@@ -5,6 +5,7 @@ bcrypt==3.2.0
 bidict==0.21.4
 cffi==1.15.0
 click==8.0.3
+Deprecated==1.2.13
 flake8==4.0.1
 Flask==2.0.2
 Flask-Babel==2.0.0
@@ -34,6 +35,8 @@ pylint==2.11.1
 python-engineio==4.3.0
 python-socketio==5.4.1
 pytz==2021.3
+redis==4.0.1
+rq==1.10.0
 six==1.16.0
 snakeviz==2.1.1
 SQLAlchemy==1.4.27

@@ -16,6 +16,7 @@ I also used this project to learn about using python for web servers, using Flas
 * [Javascript](https://developer.mozilla.org/fr/docs/Web/JavaScript)
 * [CSS](https://developer.mozilla.org/fr/docs/Web/CSS)
 * [HTML](https://developer.mozilla.org/fr/docs/Web/HTML)
+* [Redis Queue](https://python-rq.org)
 
 ### Flask Extensions used
 
@@ -70,7 +71,8 @@ LANGUAGES = ['en', 'fr']
 
 ### Running the program
 
-Just use `python run.py`.
+Run the Redis server and start a worker with `rq worker`. 
+Then use `python run.py`.
 
 ## Development
 

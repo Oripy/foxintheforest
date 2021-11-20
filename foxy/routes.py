@@ -22,14 +22,11 @@ from flask_login import login_user, logout_user, current_user, login_required
 from flask_socketio import disconnect, emit, join_room
 from flask_babel import _
 
-from foxy import app, db, bcrypt, socketio
+from foxy import app, db, bcrypt, socketio, redis_queue
 from foxy.forms import RegistrationForm, LoginForm
 from foxy.models import User, Matches, Games
 from foxy import foxintheforest
-from foxy import random_ai
-from foxy import good_ai
-
-AI_dict = {"TheBad": random_ai, "TheGood": good_ai}
+from foxy.tasks import next_ai_move, AI_dict
 
 def authenticated_only(func: Callable) -> Callable:
     """Decorator to disconnect if user is not authenticated for socketio.on() functions"""
@@ -211,24 +208,13 @@ def get_game(data):
     game_state = json.loads(game_data.game)
     emit("game", (json.dumps(foxintheforest.get_player_game(game_state, player)),
                   json.dumps([match_data.score_first_player, match_data.score_second_player])))
-    socketio.sleep(0)
     if match_data.second_player:
-        if match_data.second_player.username in AI_dict.keys():
+        if match_data.second_player.username in AI_dict.keys() and not game_data.lock:
             state = foxintheforest.get_state_from_game(game_state)
-            while state["current_player"] == 1 and game_data.status != 2 and not game_data.lock:
+            if state["current_player"] == 1 and game_data.status != 2 and not game_data.lock:
                 game_data.lock = True
                 db.session.commit()
-                ai_play = AI_dict[match_data.second_player.username].ai_play(
-                    foxintheforest.get_player_game(game_state, 1))
-                game_state = foxintheforest.play(game_state, ai_play)
-                state = foxintheforest.get_state_from_game(game_state)
-                if len(state["discards"][0]) + len(state["discards"][1]) == 26:
-                    game_data.status = 2
-                game_data.game = json.dumps(game_state)
-                game_data.lock = False
-                db.session.commit()
-                emit("game changed", json.dumps({}), room=game_id)
-                socketio.sleep(0)
+                redis_queue.enqueue(next_ai_move, match_data.second_player.username, game_id)
     if game_data.status == 2:
         if match_data.status != 2:
             state = foxintheforest.get_state_from_game(json.loads(game_data.game))

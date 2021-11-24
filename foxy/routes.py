@@ -21,6 +21,7 @@ from flask import flash, render_template, url_for, request, json, redirect
 from flask_login import login_user, logout_user, current_user, login_required
 from flask_socketio import disconnect, emit, join_room
 from flask_babel import _
+from random import randint
 
 from foxy import app, db, bcrypt, socketio, redis_queue
 from foxy.forms import RegistrationForm, LoginForm
@@ -41,9 +42,13 @@ def flash_io(text: str, category: str = "info") -> None:
     """Send "message" to the client with the given category"""
     emit('message', json.dumps({"text": text, "category": category}))
 
-def create_new_game(match_id):
+def create_new_game(match_id, first_player=-1):
     """Create a new game in the database"""
-    game_state = json.dumps(foxintheforest.new_game())
+    new_game = foxintheforest.new_game()
+    if first_player not in [0, 1]:
+        first_player = randint(0, 1)
+    new_game["first_player"] = first_player
+    game_state = json.dumps(new_game)
     return Games(game=game_state, match_id=match_id, status=1)
 
 @app.route("/")
@@ -225,7 +230,8 @@ def get_game(data):
             if (match_data.score_first_player >= 21 or match_data.score_second_player >= 21):
                 match_data.status = 2
             else:
-                db.session.add(create_new_game(game_id))
+                new_first_player = 1 - state["plays"][0][0]
+                db.session.add(create_new_game(game_id, new_first_player))
             db.session.commit()
         if match_data.status == 2:
             emit("match ended", json.dumps({"score": [match_data.score_first_player,

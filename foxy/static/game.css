@@ -1,6 +1,6 @@
 #playingarea
 {
-	height: calc(100% - 58px);
+	height: 100%;
 
 	display: grid;
 	grid-template-columns: [col-start] 1fr 4fr 1fr [col-end];

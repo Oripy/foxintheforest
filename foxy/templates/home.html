@@ -1,5 +1,68 @@
 {% extends 'layout.html' %}
-
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
+{% endblock %}
 {% block content %}
-
+<div class="rules">
+    <h1>{{ _('Rules') }}</h1>
+    <p>{{ _('The Fox in The Forest, designed by Joshua Buergel, is a trick taking game for 2 players.') }}</p>
+    <h2>{{ _('Goal of the Game')}}</h2>
+    <p>{{ _('The players are playing cards to win tricks. Each round will provide some points to each player based on how many tricks they won. The player with the most point at the end is the winner.')}}</p>
+    <h2>{{ _('Setup') }}</h2>
+    <p>{{ _('The Deck is composed of 33 cards of 3 suits numbered 1 to 11.') }}</p>
+    <p>{{ _('Deal 13 cards to each player, then turn over one Decree card.') }}</p>
+    <h2>{{ _('Gameplay')}}</h2>
+    <h3>{{ _('Playing a trick')}}</h3>
+    <p>{{ _('The first player is chosen randomly. Then for each trick, the winner of the previous trick start the next trick.') }}</p>
+    <p>{{ _('The first card played in a trick can be any card from the player\'s hand.') }}</p>
+    <p>{{ _('The other player then must play a card of the same suit. If he can\'t he can play any card.')}}</p>
+    <h3>{{ _('Winning a trick')}}</h3>
+    <p>{{ _('Once both cards have been played, the winner of the trick is determined.')}}</p>
+    <p>{{ _('If both cards are of the same suit, the player who played the highest card wins the trick.')}}</p>
+    <p>{{ _('If cards are not of the same suit, the player who played a card from the Decree card suit wins the trick.')}}</p>
+    <p>{{ _('If no cards from the Decree card have been played, then the player who played first wins the trick.')}}</p>
+    <h3>{{ _('Special cards') }}</h3>
+    <p>{{ _('Each odd numbered cards have a special effect that changes the rules above.')}}</p>
+    <div id="specialcards">
+        <div class="playingcard help" id="help1">
+            1<br />
+            <p class="helptext">{{ _('If you play this and lose the trick, you lead the next trick.') }}</p>
+        </div>
+        <div class="playingcard help" id="help3">
+            3<br />
+            <p class="helptext">{{ _('When you play this, you may exchange the trump card with a card from your hand.') }}</p>
+        </div>
+        <div class="playingcard help" id="help5">
+            5<br />
+            <p class="helptext">{{ _('When you play this, draw one card, then return any one card to the bottom of the deck face down.') }}</p>
+        </div>
+        <div class="playingcard help" id="help7">
+            7<br />
+            <p class="helptext">{{ _('Every 7 won is worth 1 point.') }}</p>
+        </div>
+        <div class="playingcard help" id="help9">
+            9<br />
+            <p class="helptext">{{ _('When determining the winner of a trick with only one 9, treat that 9 as if it were the trump suit.') }}</p>
+        </div>
+        <div class="playingcard help" id="help11">
+            11<br />
+            <p class="helptext">{{ _('When you lead this, if your opponent has this suit, they must play either the 1 of this suit or their highest card of this suit.') }}</p>
+        </div>
+    </div>
+    <h2>{{ _('Scoring') }}</h2>
+    <p>{{ _('After all 13 tricks have been played, points are distributed according to the table below.') }}</p>
+    <table>
+        <tr><th>{{ _('Tricks') }}</th><th>{{ _('Points') }}</th><th>{{ _('Description') }}</th></tr>
+        <tr><td>0-3</td><td>6</td><td>{{ _('Humble') }}</td></tr>
+        <tr><td>4</td><td>1</td><td rowspan="3">{{ _('Defeated') }}</td></tr>
+        <tr><td>5</td><td>2</td></tr>
+        <tr><td>6</td><td>3</td></tr>
+        <tr><td>7-9</td><td>6</td><td>{{ _('Victorious') }}</td></tr>
+        <tr><td>10-13</td><td>0</td><td>{{ _('Greedy') }}</td></tr>
+    </table>
+    <p>{{ _('Players also earn one point for each 7 they won.') }}</p>
+    <p>{{ _('The first player for the next round will be the player that did not start the previous round.') }}</p>
+    <h2>{{ _('End of the Game') }}</h2>
+    <p>{{ _('If one player reached 21 or more, the game is over and the player with the most points wins the game.') }}</p>
+</div>
 {% endblock content %}

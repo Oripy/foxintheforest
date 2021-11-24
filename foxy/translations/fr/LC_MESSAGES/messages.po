@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-12 12:26+0100\n"
+"POT-Creation-Date: 2021-11-24 23:05+0100\n"
 "PO-Revision-Date: 2021-11-12 11:50+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.9.1\n"
 
-#: foxy/__init__.py:24
+#: foxy/__init__.py:26
 msgid "Please log in to access this page."
 msgstr "Se connecter pour accéder à cette page."
 
@@ -50,31 +50,33 @@ msgstr "Se souvenir de moi"
 msgid "Login"
 msgstr "Connexion"
 
-#: foxy/routes.py:69
-msgid "Account created for %(username)!"
+#: foxy/routes.py:67
+#, fuzzy, python-format
+msgid "Account created for %(username)s!"
 msgstr "Compte créé pour %(username) !"
 
-#: foxy/routes.py:84
-msgid "Welcome back %(username)!"
+#: foxy/routes.py:82
+#, fuzzy, python-format
+msgid "Welcome back %(username)s!"
 msgstr "Re-bonjour %(username) !"
 
-#: foxy/routes.py:86
+#: foxy/routes.py:84
 msgid "Login unsuccessful. Please check username and password."
 msgstr "Echec de connexion. Vérifier le pseudo et mot de passe."
 
-#: foxy/routes.py:156
+#: foxy/routes.py:155
 msgid "This AI does not exists."
 msgstr "Cette IA n'existe pas."
 
-#: foxy/routes.py:176 foxy/routes.py:202 foxy/routes.py:257
+#: foxy/routes.py:175 foxy/routes.py:201 foxy/routes.py:247
 msgid "This game does not exists."
 msgstr "Cette partie n'existe pas."
 
-#: foxy/routes.py:189 foxy/routes.py:208 foxy/routes.py:275
+#: foxy/routes.py:188 foxy/routes.py:207 foxy/routes.py:265
 msgid "You are not a player in this game."
 msgstr "Tu n'es pas un joueur dans cette partie."
 
-#: foxy/routes.py:243
+#: foxy/routes.py:233
 msgid "Game finished."
 msgstr "Partie terminée."
 
@@ -118,27 +120,27 @@ msgstr "Ton score"
 msgid "Your number of tricks won"
 msgstr "Nombre de plis gagnés"
 
-#: foxy/templates/game.html:44
+#: foxy/templates/game.html:44 foxy/templates/home.html:29
 msgid "If you play this and lose the trick, you lead the next trick."
 msgstr "Si tu perds le pli avec cette carte, tu commences le pli suivant."
 
-#: foxy/templates/game.html:48
+#: foxy/templates/game.html:48 foxy/templates/home.html:33
 msgid ""
 "When you play this, you may exchange the trump card with a card from your"
 " hand."
-msgstr "Permet de changer la carte d'Atout avec une carte de votre main."
+msgstr "Permet de changer la carte d'Atout avec une carte de ta main."
 
-#: foxy/templates/game.html:52
+#: foxy/templates/game.html:52 foxy/templates/home.html:37
 msgid ""
 "When you play this, draw one card, then return any one card to the bottom"
 " of the deck face down."
 msgstr "Piocher une carte puis remettre une carte au fond de la pioche."
 
-#: foxy/templates/game.html:56
+#: foxy/templates/game.html:56 foxy/templates/home.html:41
 msgid "Every 7 won is worth 1 point."
-msgstr "Chanque 7 remporté donne 1 point en fin de manche."
+msgstr "Chaque 7 remporté donne 1 point en fin de manche."
 
-#: foxy/templates/game.html:60
+#: foxy/templates/game.html:60 foxy/templates/home.html:45
 msgid ""
 "When determining the winner of a trick with only one 9, treat that 9 as "
 "if it were the trump suit."
@@ -146,13 +148,185 @@ msgstr ""
 "Si cette carte est le seul 9 d'un pli, elle est considérée comme un 9 "
 "d'Atout"
 
-#: foxy/templates/game.html:64
+#: foxy/templates/game.html:64 foxy/templates/home.html:49
 msgid ""
 "When you lead this, if your opponent has this suit, they must play either"
 " the 1 of this suit or their highest card of this suit."
 msgstr ""
-"Si cette carte est jouée en premier, l'autre joueur doit poser sa plus "
-"forte carte ou le 1 de cette couleur."
+"Si cette carte est jouée en premier, l'autre joueur doit, s'il le peut "
+"poser sa plus forte carte ou le 1 de cette couleur."
+
+#: foxy/templates/home.html:7
+msgid "Rules"
+msgstr "Règles du jeu"
+
+#: foxy/templates/home.html:8
+msgid ""
+"The Fox in The Forest, designed by Joshua Buergel, is a trick taking game"
+" for 2 players."
+msgstr ""
+"The Fox in The Forest, créé par Joshua Buergel, est un jeu de pli"
+" pour 2 joueurs."
+
+#: foxy/templates/home.html:9
+msgid "Goal of the Game"
+msgstr "But du Jeu"
+
+#: foxy/templates/home.html:10
+msgid ""
+"The players are playing cards to win tricks. Each round will provide some"
+" points to each player based on how many tricks they won. The player with"
+" the most point at the end is the winner."
+msgstr ""
+"Les joueurs jouent des cartes pour gagner des plis. Chaque manche donnera"
+" des points à chaque joueur selon le nombre de plis remportés. Le joueur avec"
+" le plus de points à la fin de la partie est déclaré vainqueur."
+
+#: foxy/templates/home.html:11
+msgid "Setup"
+msgstr "Mise en place"
+
+#: foxy/templates/home.html:12
+msgid "The Deck is composed of 33 cards of 3 suits numbered 1 to 11."
+msgstr "Le jeu est composé de 33 cartes de 3 couleurs numérotées de 1 à 11."
+
+#: foxy/templates/home.html:13
+msgid "Deal 13 cards to each player, then turn over one Decree card."
+msgstr "Distribuer 13 cartes à chaque joueur, puis retourner une carte dont la couleur sera l'Atout."
+
+#: foxy/templates/home.html:14
+msgid "Gameplay"
+msgstr "Le Jeu"
+
+#: foxy/templates/home.html:15
+msgid "Playing a trick"
+msgstr "Jouer un pli"
+
+#: foxy/templates/home.html:16
+msgid ""
+"The first player is chosen randomly. Then for each trick, the winner of "
+"the previous trick start the next trick."
+msgstr ""
+"Le premier joueur est choisi au hasard. Puis après chaque pli, le gagnant"
+" commence le pli suivant."
+
+#: foxy/templates/home.html:17
+msgid "The first card played in a trick can be any card from the player's hand."
+msgstr "La première carte du pli peut être n'importe quelle carte de la main du joueur."
+
+#: foxy/templates/home.html:18
+msgid ""
+"The other player then must play a card of the same suit. If he can't he "
+"can play any card."
+msgstr ""
+"L'autre joueur doit ensuite jouer une carte de la même couleur. S'il ne peut "
+"pas, il peut alors jouer n'importe quelle carte."
+
+#: foxy/templates/home.html:19
+msgid "Winning a trick"
+msgstr "Gagner un pli"
+
+#: foxy/templates/home.html:20
+msgid "Once both cards have been played, the winner of the trick is determined."
+msgstr "Une fois que les deux cartes ont été jouées, le gagnant du pli est déterminé."
+
+#: foxy/templates/home.html:21
+msgid ""
+"If both cards are of the same suit, the player who played the highest "
+"card wins the trick."
+msgstr ""
+"Si les deux cartes sont de la même couleur, le joueur ayant joué la carte"
+" la plus forte gagne le pli"
+
+#: foxy/templates/home.html:22
+msgid ""
+"If cards are not of the same suit, the player who played a card from the "
+"Decree card suit wins the trick."
+msgstr ""
+"Si les cartes ne sont pas de la même couleur, le joueur ayant joué la "
+"carte de la couleur de l'Atout remporte le pli."
+
+#: foxy/templates/home.html:23
+msgid ""
+"If no cards from the Decree card have been played, then the player who "
+"played first wins the trick."
+msgstr ""
+"Si aucune carte de la couleur de l'Atout n'a été joué, le joueur qui a "
+"commencé le pli remporte le pli."
+
+#: foxy/templates/home.html:24
+msgid "Special cards"
+msgstr "Cartes spéciales"
+
+#: foxy/templates/home.html:25
+msgid ""
+"Each odd numbered cards have a special effect that changes the rules "
+"above."
+msgstr ""
+"Toutes les cartes impaires ont un pouvoir qui change les règles ci-dessus."
+
+#: foxy/templates/home.html:52
+msgid "Scoring"
+msgstr "Calcul des points"
+
+#: foxy/templates/home.html:53
+msgid ""
+"After all 13 tricks have been played, points are distributed according to"
+" the table below."
+msgstr ""
+"Après avoir joué les 13 plis, les points sont distribués comme indiqué dans"
+" le tableau ci-dessous."
+
+#: foxy/templates/home.html:55
+msgid "Tricks"
+msgstr "Plis"
+
+#: foxy/templates/home.html:55
+msgid "Points"
+msgstr "Points"
+
+#: foxy/templates/home.html:55
+msgid "Description"
+msgstr "Description"
+
+#: foxy/templates/home.html:56
+msgid "Humble"
+msgstr "Humble"
+
+#: foxy/templates/home.html:57
+msgid "Defeated"
+msgstr "Vaincu"
+
+#: foxy/templates/home.html:60
+msgid "Victorious"
+msgstr "Vainqueur"
+
+#: foxy/templates/home.html:61
+msgid "Greedy"
+msgstr "Gourmand"
+
+#: foxy/templates/home.html:63
+msgid "Players also earn one point for each 7 they won."
+msgstr "Les joueurs gagnent aussi 1 point pour chaque 7 qu'ils ont joué."
+
+#: foxy/templates/home.html:64
+msgid ""
+"The first player for the next round will be the player that did not start"
+" the previous round."
+msgstr ""
+"Le premier joueur de la manche suivante sera celui qui n'a pas commencé cette manche-ci."
+
+#: foxy/templates/home.html:65
+msgid "End of the Game"
+msgstr "Fin de la partie"
+
+#: foxy/templates/home.html:66
+msgid ""
+"If one player reached 21 or more, the game is over and the player with "
+"the most points wins the game."
+msgstr ""
+"Si un joueur atteint ou dépasse 21 points, la partie est terminée et le"
+" joueur avec le plus de points remporte la partie."
 
 #: foxy/templates/layout.html:20
 msgid "Leaderboard"

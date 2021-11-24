@@ -1,0 +1,62 @@
+.rules
+{
+	padding: 50px 100px;
+	height: calc(100% - 100px);
+	width: 70%;
+	overflow-x: auto;
+	overflow-y: scroll;
+}
+
+.playingcard
+{
+	width: 57px;
+	height: 89px;
+	padding: 5px;
+	border: solid 3px #808080;
+	background-color: white;
+	display: inline-block;
+	border-radius: 10px;
+	font-size: 24pt;
+	text-align: center;
+
+	font-weight: bold;
+	font-family: "Arial Black", Gadget, sans-serif;
+	line-height: 1.15;
+	user-select: none;
+}
+
+.red
+{
+	color: red;
+}
+
+.green
+{
+	color: green;
+}
+
+.black
+{
+	color: black;
+}
+
+.helptext {
+	font-size: 4.9px;
+	text-align: justify;
+}
+
+#specialcards {
+    display: flex;
+	flex-wrap: wrap;
+	/* transform-origin: 0 0;
+	transform: scale(2); */
+}
+
+@media (hover: hover) {
+    .playingcard:hover
+    {
+    	background-color: lightcyan;
+    	/* transform-origin: bottom center; */
+    	transform: scale(2.5)
+    }
+}

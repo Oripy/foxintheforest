@@ -34,8 +34,6 @@ socket.on('connect', () => socket.emit('get game', JSON.stringify({id: game_id})
 socket.on('game', (game, score) => Queue.enqueue(() => showState(JSON.parse(game), JSON.parse(score))));
 // When receiving info that game changed, request the game state
 socket.on('game changed', () => socket.emit('get game', JSON.stringify({id: game_id})));
-// When receiving the game state update, update it with animations
-socket.on('game state', (game) => Queue.enqueue(() => updateState(JSON.parse(game))));
 // Show alert messages
 socket.on('message', (data) => showMessage(JSON.parse(data).text, JSON.parse(data).category));
 // If game ended, show the result overlay
@@ -217,8 +215,8 @@ async function showState(game, score) {
       trick = [];
     }
   }
-  document.getElementById("plasttrick").innerHTML = "";
-  document.getElementById("olasttrick").innerHTML = "";
+  // document.getElementById("plasttrick").innerHTML = "";
+  // document.getElementById("olasttrick").innerHTML = "";
   setTrumpCard(trump_card);
   console.log(player_hand);
   setPlayerHand(player_hand);
@@ -654,7 +652,7 @@ async function showResult(data) {
     document.getElementById("messagecontent").innerHTML = "";
     socket.emit('get game', JSON.stringify({id: game_id}));
   }, {once: true})
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await wait(100);
 }
 
 async function showEnd(data) {
@@ -671,7 +669,7 @@ async function showEnd(data) {
   text += `<br>${score[player]} - ${score[1 - player]}`
   document.getElementById("messagecontent").innerHTML = text;
   document.getElementById("message").classList.remove("invisible");
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await wait(100);
 }
 
 // Events handling to play a card

@@ -103,7 +103,8 @@ def lobby():
         play on games where the login user is one of the player,
         join games created by other users"""
     open_games = Matches.query.filter(
-        (((Matches.first_player_id==None)|(Matches.second_player_id==None))&(Matches.status<2)))
+        (((Matches.first_player_id==None)|(Matches.second_player_id==None)
+         )&(Matches.status<2)&(Matches.first_player_id!=current_user.id)))
     own_games = Matches.query.filter(
         (((Matches.first_player_id==current_user.id)|(Matches.second_player_id==current_user.id
             ))&(Matches.status<2)))

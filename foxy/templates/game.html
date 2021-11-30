@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='game.css') }}">
-    <script src="{{ url_for('static', filename = 'socket.io.min.js') }}"></script>
 {% endblock %}
 {% block content %}
 <div id="playingarea">
@@ -30,12 +30,12 @@
     <div class="gameinfo opponent">
         <div id="olasttrick" class="preview"></div>
         <div id="opponentscore" title="{{ _('Opponent number of tricks won') }}">0</div>
-        <div id="opponentname">{{ opponent }}</div>
+        <div id="opponentname"><span class="status u{{ opponent.id }}"></span>{{ opponent.username }}</div>
         <div id="opponentmatchscore" title="{{ _('Opponent match score') }}"></div>
     </div>
     <div class="gameinfo player">
         <div id="playermatchscore" title="{{ _('Your match score') }}"></div>
-        <div id="playername">{{ current_user.username }}</div>
+        <div id="playername"><span class="status u{{ current_user.id }}"></span>{{ current_user.username }}</div>
         <div id="playerscore" title="{{ _('Your number of tricks won') }}">0</div>
         <div id="plasttrick" class="preview"></div>
     </div>

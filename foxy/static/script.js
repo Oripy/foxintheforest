@@ -26,7 +26,7 @@ window.onpopstate = (event) => {
 };
 
 // SocketIO socket
-const socket = io();
+// const socket = io();
 socket.on('error', (error) => console.error('SocketIO error ', error));
 // When socket connected, request for the game state
 socket.on('connect', () => socket.emit('get game', JSON.stringify({id: game_id})));
@@ -125,7 +125,6 @@ function highlightPlayer(p) {
 
 // Change the view to display the given state
 async function showState(game, score) {
-  console.log(game);
   player = parseInt(game.player);
   current_game = game;
   let trump_card = game.init_trump_card;
@@ -218,7 +217,6 @@ async function showState(game, score) {
   // document.getElementById("plasttrick").innerHTML = "";
   // document.getElementById("olasttrick").innerHTML = "";
   setTrumpCard(trump_card);
-  console.log(player_hand);
   setPlayerHand(player_hand);
   sortPlayerHand();
   setOpponentHand(opponent_hand);

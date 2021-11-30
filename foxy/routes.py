@@ -17,17 +17,20 @@
 """
 from __future__ import annotations
 from typing import Callable, Union
+from random import randint
+
 from flask import flash, render_template, url_for, request, json, redirect
 from flask_login import login_user, logout_user, current_user, login_required
 from flask_socketio import disconnect, emit, join_room
 from flask_babel import _
-from random import randint
 
 from foxy import app, db, bcrypt, socketio, redis_queue
 from foxy.forms import RegistrationForm, LoginForm
 from foxy.models import User, Matches, Games
 from foxy import foxintheforest
 from foxy.tasks import next_ai_move, AI_dict
+
+list_connected = []
 
 def authenticated_only(func: Callable) -> Callable:
     """Decorator to disconnect if user is not authenticated for socketio.on() functions"""
@@ -182,15 +185,15 @@ def game():
         return redirect(url_for('lobby'))
     if game_state.first_player_id == current_user.id:
         return render_template('game.html', id=game_id,
-            opponent=game_state.second_player.username
+            opponent=game_state.second_player
             if game_state.second_player is not None else None)
     if game_state.second_player_id == current_user.id:
-        return render_template('game.html', id=game_id, opponent=game_state.first_player.username)
+        return render_template('game.html', id=game_id, opponent=game_state.first_player)
     if game_state.second_player_id is None:
         game_state.second_player_id = current_user.id
         game_state.status = 1
         db.session.commit()
-        return render_template('game.html', id=game_id, opponent=game_state.first_player.username)
+        return render_template('game.html', id=game_id, opponent=game_state.first_player)
     flash(_('You are not a player in this game.'), 'danger')
     return redirect(url_for('lobby'))
 
@@ -270,3 +273,19 @@ def play(data):
         emit("game changed", json.dumps({}), room=game_id)
     else:
         flash_io(_("You are not a player in this game."), "danger")
+
+@socketio.on('connect')
+def connect():
+    """Keep user connected list updated by adding users when connecting"""
+    print(f"user {current_user.id} connected")
+    if current_user.id not in list_connected:
+        list_connected.append(current_user.id)
+    emit('list connected', list_connected, broadcast=True)
+
+@socketio.on('disconnect')
+def disconnect():
+    """Keep user connected list updated by removing users when disconnecting"""
+    print(f"user {current_user.id} disconnected")
+    if current_user.id in list_connected:
+        list_connected.remove(current_user.id)
+    emit('list connected', list_connected, broadcast=True)

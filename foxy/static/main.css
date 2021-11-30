@@ -259,3 +259,19 @@ tr:nth-child(2n) {
 td, th {
   padding: 10px;
 }
+
+.status {
+  height: 15px;
+  width: 15px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status.red {
+  background-color: red;
+}
+
+.status.green {
+  background-color: green;
+}

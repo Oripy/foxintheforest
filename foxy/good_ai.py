@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import List, Dict, Union, Any
 from random import shuffle
 from math import sqrt, log
+import pyext_good_ai
 
 from foxy.foxintheforest import (
     copy_state, do_step, pick_cards, other_player, get_state_from_game, list_allowed, CARDS,
@@ -125,7 +126,8 @@ class Node():
 
 def upper_confidence_bound(node: Node) -> float:
     """Output Upper Confidence Bound formula result for the given node """
-    return node.reward / node.visits + K * sqrt(log(node.availability) / node.visits)
+    return pyext_good_ai.upper_confidence_bound(node.reward, node.visits, node.availability)
+    # return node.reward / node.visits + K * sqrt(log(node.availability) / node.visits)
 
 def aquire_knowledge(state: State) -> Knowledge:
     """Extract knowledge on current state from past plays """

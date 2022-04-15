@@ -32,6 +32,8 @@ K: float = 5.0
 NB_SIMUL_P0: int = 5000
 """Number of simulated games for each play"""
 
+EXPANSION_THRESHOLD: int = 1
+"""Number of visits (and thus simulations) before expanding the node"""
 
 class Node():
     """The Node object is one node of the Monte Carlo tree
@@ -291,8 +293,14 @@ def select_play(game: Game, runs: int) -> Union[Play, bool]:
         node: Node = root
         special_type: Union[int, None] = knowledge["special_type"]
         while len(rand_state["hands"][0]) != 0 or len(rand_state["hands"][1]) != 0:
-            node = select(node, rand_state, player)
-            rand_state, special_type = do_step(rand_state, node.play, special_type)
+            if node.visits < EXPANSION_THRESHOLD:
+                rand_state, special_type = do_step(rand_state,
+                    list_allowed(rand_state,
+                                 rand_state["current_player"])[0],
+                    special_type)
+            else:
+                node = select(node, rand_state, player)
+                rand_state, special_type = do_step(rand_state, node.play, special_type)
         while node.parent is not None:
             node.visits += 1
             tricks_won: int = len(rand_state["discards"][0])//2
@@ -313,6 +321,7 @@ def select_play(game: Game, runs: int) -> Union[Play, bool]:
                 if player == 1:
                     node.reward += 1
             node = node.parent
+        root.visits += 1
 
     maxi:int = 0
     selected: Node

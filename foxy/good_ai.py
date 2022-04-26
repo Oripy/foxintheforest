@@ -16,7 +16,7 @@ Point of entry is ai_play(game), the rest of methodes are private
 from __future__ import annotations
 
 from typing import List, Dict, Union, Any
-from random import shuffle
+from random import shuffle, choice
 from math import sqrt, log
 
 from foxy.foxintheforest import (
@@ -72,7 +72,7 @@ class Node():
         )
         if denominator == 0:
             denominator = 1
-        return (f'{self.play} visits:{self.visits}'
+        return (f'{self.play} visits:{self.visits} '
             f'reward:{self.reward} av.:{self.availability} '
             f'h:{self.outcome_p0["humble"]/denominator*100:.2f}%,'
             f'd:{self.outcome_p0["defeated"]/denominator*100:.2f}%,'
@@ -89,7 +89,7 @@ class Node():
         )
         if denominator == 0:
             denominator = 1
-        text += (f'{self.play} visits:{self.visits}'
+        text += (f'{self.play} visits:{self.visits} '
             f'reward:{self.reward} av.:{self.availability} '
             f'h:{self.outcome_p0["humble"]/denominator*100:.2f}%,'
             f'd:{self.outcome_p0["defeated"]/denominator*100:.2f}%,'
@@ -254,7 +254,7 @@ def select(node: Node, state: State, ai_player: int) -> Node:
 
     min_max: float
     if ai_player == state["current_player"]:
-        min_max = 0
+        min_max = -float("inf")
     else:
         min_max = float("inf")
 
@@ -295,8 +295,8 @@ def select_play(game: Game, runs: int) -> Union[Play, bool]:
         while len(rand_state["hands"][0]) != 0 or len(rand_state["hands"][1]) != 0:
             if node.visits < EXPANSION_THRESHOLD:
                 rand_state, special_type = do_step(rand_state,
-                    list_allowed(rand_state,
-                                 rand_state["current_player"])[0],
+                    choice(list_allowed(rand_state,
+                                 rand_state["current_player"])),
                     special_type)
             else:
                 node = select(node, rand_state, player)
@@ -308,18 +308,26 @@ def select_play(game: Game, runs: int) -> Union[Play, bool]:
                 node.outcome_p0["humble"] += 1
                 if player == 0:
                     node.reward += 1
+                else:
+                    node.reward -= 1
             elif tricks_won <= 6:
                 node.outcome_p0["defeated"] += 1
                 if player == 1:
                     node.reward += 1
+                else:
+                    node.reward -= 1
             elif tricks_won <= 9:
                 node.outcome_p0["victorious"] += 1
                 if player == 0:
                     node.reward += 1
+                else:
+                    node.reward -= 1
             else:
                 node.outcome_p0["greedy"] += 1
                 if player == 1:
                     node.reward += 1
+                else:
+                    node.reward -= 1
             node = node.parent
         root.visits += 1
 

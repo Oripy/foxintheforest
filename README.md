@@ -10,7 +10,7 @@ I also used this project to learn about using python for web servers, using Flas
 
 ## Built With
 
-* [Python](https://www.python.org/) I used python 3.8
+* [Python](https://www.python.org/) I used python 3.12.1
 * [Flask](https://flask.palletsprojects.com)
 * [SocketIO](https://socket.io/)
 * [Javascript](https://developer.mozilla.org/fr/docs/Web/JavaScript)

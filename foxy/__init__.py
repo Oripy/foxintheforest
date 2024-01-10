@@ -16,6 +16,7 @@ import redis
 from rq import Queue
 
 app = Flask(__name__, instance_relative_config=True)
+app.app_context().push()
 app.config.from_object('config')
 app.config.from_pyfile('config.py')
 db = SQLAlchemy(app)
@@ -30,8 +31,9 @@ babel = Babel(app)
 redis_server = redis.Redis()
 redis_queue = Queue(connection=redis_server)
 
-@babel.localeselector
 def get_locale():
     return request.accept_languages.best_match(app.config['LANGUAGES'])
+
+babel.init_app(app, locale_selector=get_locale)
 
 from foxy import routes

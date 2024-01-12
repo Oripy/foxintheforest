@@ -379,7 +379,10 @@ def list_allowed(state: State, player: int) -> List[Play]:
                 if card[0] == 1:
                     allowed.append([player, card])
                 else:
-                    best_card = card
+                    if not best_card:
+                        best_card = card
+                    elif card[0] > best_card[0]:
+                        best_card = card
             else:
                 allowed.append([player, card])
     if best_card:

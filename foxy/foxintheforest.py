@@ -114,8 +114,6 @@ def do_step(state: State, step: Play,
             special_type: Union[int, None]) -> Tuple[State, Union[int, None]]:
     """Apply a play to a State and returns the next State"""
     state["plays"].append(step)
-    if not isinstance(step[0], int) or not isinstance(step[1], list):
-        return state, special_type
     if special_type is None:
         state["trick"][step[0]] = step[1]
         if step[1] in state["hands"][step[0]]:
@@ -211,11 +209,6 @@ def apply_play(game: Game, step: Play) -> Game:
 def trick_winner(leading_player: int, trick: List[Card],
                  trump_card: Card) -> Tuple[int, int]:
     """Returns the winner of a trick as well as the next leading player"""
-    if not (isinstance(trump_card[1], str) and isinstance(trick[0][0], int) and
-        isinstance(trick[0][1], str) and isinstance(trick[1][0], int) and
-        isinstance(trick[1][1], str)):
-        return (-1, -1)
-
     winner: int
     next_leading_player: int
     trump_suit: str = trump_card[1]
@@ -258,8 +251,6 @@ def trick_winner(leading_player: int, trick: List[Card],
 
 def valid_step(state: State, step: Play) -> bool:
     """Check if a play is valid"""
-    if not isinstance(step[0], int) or not isinstance(step[1], list):
-        return False
     player: int = step[0]
     card: Card = step[1]
     # print(card, player, state)
@@ -381,29 +372,21 @@ def list_allowed(state: State, player: int) -> List[Play]:
     allowed = []
     other_card = state["trick"][other_player(player)]
 
-    same_suit_list = []
-    for card in state["hands"][player]:
-        if card[1] == other_card[1]:
-            same_suit_list.append(card)
-    same_suit_list.sort(key=lambda a: a[0])
-
+    best_card = None
     for card in state["hands"][player]:
         if other_card[1] == card[1]: # Same suit
             if other_card[0] == 11: # Force best card or 1
                 if card[0] == 1:
-                    # print("OK, 11 forced 1 or best")
                     allowed.append([player, card])
                 else:
-                    if card == same_suit_list[-1]:
-                        # print("OK, 11 forced 1 or best")
-                        allowed.append([player, card])
+                    best_card = card
             else:
-                # print("OK, same suit and nothing forcing")
                 allowed.append([player, card])
-        else: # Different suit
-            if len(same_suit_list) == 0:
-                # print("OK, no card on the same suit available")
-                allowed.append([player, card])
+    if best_card:
+        allowed.append([player, best_card])
+
+    if len(allowed) == 0:
+        allowed.append([player, card])
     return allowed
 
 if __name__ ==  '__main__':

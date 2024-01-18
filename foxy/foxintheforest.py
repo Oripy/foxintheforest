@@ -333,8 +333,8 @@ def get_score(state: State) -> List[int]:
                 score[player] += 3
             elif tricks_won[player] <= 9: # Victorious
                 score[player] += 6
-            else: # Greedy
-                score[player] += 0
+            # else: # Greedy
+            #     score[player] += 0
     return score
 
 def decode_card(card_text: str) -> Union[Card, bool]:

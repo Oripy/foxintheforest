@@ -21,18 +21,23 @@ from math import sqrt, log
 
 from foxy.foxintheforest import (
     copy_state, do_step, pick_cards, other_player, get_state_from_game, list_allowed, CARDS,
-    Card, Play, State, Game
+    Card, Play, State, Game, get_score
 )
+
+from time import time, sleep
 
 Knowledge = Dict[str, Any]
 
 K: float = 5.0
 """Parameter of the Upper Confidence Bound formula"""
 
-NB_SIMUL_P0: int = 5000
-"""Number of simulated games for each play"""
+TURN_DURATION: int = 5
+"""Time to think on each turn (seconds)"""
 
-EXPANSION_THRESHOLD: int = 1
+NB_SIMUL_P0: int = 1000
+"""Number of simulated games for each batch before checking for time"""
+
+EXPANSION_THRESHOLD: int = 5
 """Number of visits (and thus simulations) before expanding the node"""
 
 class Node():
@@ -276,60 +281,43 @@ def select(node: Node, state: State, ai_player: int) -> Node:
                 selected = child
     return selected
 
-def select_play(game: Game, runs: int) -> Union[Play, bool]:
+def select_play(game: Game, duration: float, runs: int) -> Union[Play, bool]:
     """Select one play based on MCTS simulations """
     state: State = get_state_from_game(game)
     allowed: List[Play] = list_allowed(state, state["current_player"])
     if len(allowed) == 0:
         return False
     if len(allowed) == 1:
+        sleep(duration)
         return allowed[0]
 
     root: Node = Node([-1, [-1, ""]])
     player: int = state["current_player"]
     knowledge: Knowledge = aquire_knowledge(state)
-    for _ in range(runs):
-        rand_state: State = random_state(state, knowledge)
-        node: Node = root
-        special_type: Union[int, None] = knowledge["special_type"]
-        while len(rand_state["hands"][0]) != 0 or len(rand_state["hands"][1]) != 0:
-            if node.visits < EXPANSION_THRESHOLD:
-                rand_state, special_type = do_step(rand_state,
-                    choice(list_allowed(rand_state,
-                                 rand_state["current_player"])),
-                    special_type)
-            else:
-                node = select(node, rand_state, player)
-                rand_state, special_type = do_step(rand_state, node.play, special_type)
-        while node.parent is not None:
-            node.visits += 1
-            tricks_won: int = len(rand_state["discards"][0])//2
-            if tricks_won <= 3:
-                node.outcome_p0["humble"] += 1
-                if player == 0:
-                    node.reward += 1
+    start_time = time()
+    run_nbr = 0
+    while (time() - start_time) < duration:
+        for _ in range(runs):
+            rand_state: State = random_state(state, knowledge)
+            node: Node = root
+            special_type: Union[int, None] = knowledge["special_type"]
+            while len(rand_state["hands"][0]) != 0 or len(rand_state["hands"][1]) != 0:
+                if node.visits < EXPANSION_THRESHOLD:
+                    rand_state, special_type = do_step(rand_state,
+                        choice(list_allowed(rand_state,
+                                    rand_state["current_player"])),
+                        special_type)
                 else:
-                    node.reward -= 1
-            elif tricks_won <= 6:
-                node.outcome_p0["defeated"] += 1
-                if player == 1:
-                    node.reward += 1
-                else:
-                    node.reward -= 1
-            elif tricks_won <= 9:
-                node.outcome_p0["victorious"] += 1
-                if player == 0:
-                    node.reward += 1
-                else:
-                    node.reward -= 1
-            else:
-                node.outcome_p0["greedy"] += 1
-                if player == 1:
-                    node.reward += 1
-                else:
-                    node.reward -= 1
-            node = node.parent
-        root.visits += 1
+                    node = select(node, rand_state, player)
+                    rand_state, special_type = do_step(rand_state, node.play, special_type)
+            scores = get_score(rand_state)
+            score_diff = scores[player] - scores[other_player(player)]
+            while node.parent is not None:
+                node.visits += 1
+                node.reward += score_diff
+                node = node.parent
+            root.visits += 1
+        run_nbr += 1
 
     maxi:int = 0
     selected: Node
@@ -339,6 +327,6 @@ def select_play(game: Game, runs: int) -> Union[Play, bool]:
             maxi = child.visits
     return selected.play
 
-def ai_play(game: Game) -> Union[Play, bool]:
+def ai_play(game: Game, duration: float=TURN_DURATION, runs: int=NB_SIMUL_P0) -> Union[Play, bool]:
     """Select a play and return it"""
-    return select_play(game, NB_SIMUL_P0)
+    return select_play(game, duration, runs)

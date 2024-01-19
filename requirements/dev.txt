@@ -3,6 +3,7 @@ Babel==2.14.0
 bcrypt==4.1.2
 bidict==0.22.1
 blinker==1.7.0
+cachelib==0.10.2
 click==8.1.7
 flake8==7.0.0
 Flask==3.0.0
@@ -10,9 +11,12 @@ flask-babel==4.0.0
 Flask-Bcrypt==1.0.1
 Flask-Login==0.6.3
 Flask-Migrate==4.0.5
+Flask-Session==0.6.0
 Flask-SocketIO==5.3.6
 Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.1
+gevent==23.9.1
+greenlet==3.0.3
 h11==0.14.0
 itsdangerous==2.1.2
 Jinja2==3.1.2
@@ -26,11 +30,15 @@ python-socketio==5.11.0
 pytz==2023.3.post1
 redis==5.0.1
 rq==1.15.1
+setuptools==69.0.3
 simple-websocket==1.0.0
 snakeviz==2.2.0
 SQLAlchemy==2.0.25
 tornado==6.4
 typing_extensions==4.9.0
+uWSGI==2.0.23
 Werkzeug==3.0.1
 wsproto==1.2.0
 WTForms==3.1.2
+zope.event==5.0
+zope.interface==6.1

@@ -248,37 +248,25 @@ def select(node: Node, state: State, ai_player: int) -> Node:
     for play in allowed:
         exists: bool = False
         for child in node.children:
-            if play[0] == child.play[0] and play[1] == child.play[1]:
+            if play == child.play:
                 exists = True
+                child.availability += 1
                 list_children.append(child)
                 break
         if not exists:
             new_child = Node(play, node)
+            new_child.availability += 1
             node.add_child(new_child)
             list_children.append(new_child)
-
-    min_max: float
-    if ai_player == state["current_player"]:
-        min_max = -float("inf")
-    else:
-        min_max = float("inf")
-
+    min_max: float = -float("inf")
     selected: Node
     for child in list_children:
-        child.availability += 1
-    for child in list_children:
         if child.visits == 0:
-            selected = child
-            break
+            return child
         value: float = upper_confidence_bound(child)
-        if ai_player == state["current_player"]:
-            if value > min_max:
-                min_max = value
-                selected = child
-        else:
-            if value < min_max:
-                min_max = value
-                selected = child
+        if value > min_max:
+            min_max = value
+            selected = child
     return selected
 
 def select_play(game: Game, duration: float, runs: int) -> Union[Play, bool]:
@@ -314,17 +302,16 @@ def select_play(game: Game, duration: float, runs: int) -> Union[Play, bool]:
             score_diff = scores[player] - scores[other_player(player)]
             while node.parent is not None:
                 node.visits += 1
-                node.reward += score_diff
+                if node.play[0] == player:
+                    node.reward += score_diff
+                else:
+                    node.reward -= score_diff
                 node = node.parent
             root.visits += 1
         run_nbr += 1
-
-    maxi:int = 0
-    selected: Node
-    for child in root.children:
-        if child.visits > maxi:
-            selected = child
-            maxi = child.visits
+    # print(run_nbr)
+    selected: Node = max(root.children, key=lambda x:x.visits)
+    # print(selected.play[1], [(c.play[1], c.visits) for c in sorted(root.children, key=lambda x:x.visits, reverse=True)])
     return selected.play
 
 def ai_play(game: Game, duration: float=TURN_DURATION, runs: int=NB_SIMUL_P0) -> Union[Play, bool]:

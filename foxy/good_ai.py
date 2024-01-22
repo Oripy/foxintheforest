@@ -300,12 +300,13 @@ def select_play(game: Game, duration: float, runs: int) -> Union[Play, bool]:
                     rand_state, special_type = do_step(rand_state, node.play, special_type)
             scores = get_score(rand_state)
             score_diff = scores[player] - scores[other_player(player)]
+            reward = (9+score_diff)/18 # normalization 
             while node.parent is not None:
                 node.visits += 1
                 if node.play[0] == player:
-                    node.reward += score_diff
+                    node.reward += reward
                 else:
-                    node.reward -= score_diff
+                    node.reward -= reward
                 node = node.parent
             root.visits += 1
         run_nbr += 1

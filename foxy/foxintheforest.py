@@ -117,7 +117,7 @@ def do_step(state: State, step: Play,
     if special_type is None:
         state["trick"][step[0]] = step[1]
         if step[1] in state["hands"][step[0]]:
-            state["hands"][step[0]].pop(state["hands"][step[0]].index(step[1]))
+            state["hands"][step[0]].remove(step[1])
         else:
             state["hands"][step[0]].pop(0)
         if step[1][0] == 3:
@@ -130,14 +130,14 @@ def do_step(state: State, step: Play,
     elif special_type == 5:
         state["private_discards"][step[0]].append(step[1])
         if step[1] in state["hands"][step[0]]:
-            state["hands"][step[0]].pop(state["hands"][step[0]].index(step[1]))
+            state["hands"][step[0]].remove(step[1])
         else:
             state["hands"][step[0]].pop(0)
         special_type = None
     elif special_type == 3:
         state["trump_card"] = step[1]
         if step[1] in state["hands"][step[0]]:
-            state["hands"][step[0]].pop(state["hands"][step[0]].index(step[1]))
+            state["hands"][step[0]].remove(step[1])
         else:
             state["hands"][step[0]].pop(0)
         special_type = None

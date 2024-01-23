@@ -190,9 +190,10 @@ def aquire_knowledge(state: State) -> Knowledge:
                             opponent_max_one.append(cut)
                         else:
                             opponent_max_one.remove(cut)
+                    remaining_cards += draw_deck
+                    remaining_cards += opponent_hand
                     opponent_cuts = []
                     opponent_hand = []
-                    remaining_cards += draw_deck
                     draw_deck = []
                 next_special = 5
             if play[1][0] == 3:

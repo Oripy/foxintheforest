@@ -242,7 +242,7 @@ def random_state(state: State, knowledge: Knowledge) -> State:
     rand_state["draw_deck"] = draw_deck + remaining_cards
     return rand_state
 
-def select(node: Node, state: State, ai_player: int) -> Node:
+def select(node: Node, state: State) -> Node:
     """Select one of the allowed children based on UCT calculation """
     allowed: List[Play] = list_allowed(state, state["current_player"])
     list_children: List[Node] = []
@@ -259,7 +259,7 @@ def select(node: Node, state: State, ai_player: int) -> Node:
             new_child.availability += 1
             node.add_child(new_child)
             list_children.append(new_child)
-    min_max: float = -float("inf")
+    min_max: float = 0
     selected: Node
     for child in list_children:
         if child.visits == 0:
@@ -297,7 +297,7 @@ def select_play(game: Game, duration: float, runs: int) -> Union[Play, bool]:
                                     rand_state["current_player"])),
                         special_type)
                 else:
-                    node = select(node, rand_state, player)
+                    node = select(node, rand_state)
                     rand_state, special_type = do_step(rand_state, node.play, special_type)
             scores = get_score(rand_state)
             score_diff = scores[player] - scores[other_player(player)]

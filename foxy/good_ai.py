@@ -7,17 +7,13 @@ found in http://www.aifactory.co.uk/newsletter/2013_01_reduce_burden.htm
 As there is no "standard" way of describing a game state in Fox in the Forest
 this AI is heavily reliant on foxintheforest.py implementation.
 
-Attributes:
-    K (float): Parameter of the Upper Confidence Bound formula
-    NB_SIMUL_P0 (int): Number of simulated games for each play
-
 Point of entry is ai_play(game), the rest of methodes are private
 """
 from __future__ import annotations
 
 from typing import List, Dict, Union, Any
 from random import shuffle, choice
-from math import sqrt, log
+from math import sqrt, log, exp
 
 from foxy.foxintheforest import (
     copy_state, do_step, pick_cards, other_player, get_state_from_game, list_allowed, CARDS,
@@ -28,7 +24,7 @@ from time import time, sleep
 
 Knowledge = Dict[str, Any]
 
-K: float = 5.0
+K: float = 1.4
 """Parameter of the Upper Confidence Bound formula"""
 
 TURN_DURATION: int = 5
@@ -37,7 +33,7 @@ TURN_DURATION: int = 5
 NB_SIMUL_P0: int = 1000
 """Number of simulated games for each batch before checking for time"""
 
-EXPANSION_THRESHOLD: int = 5
+EXPANSION_THRESHOLD: int = 1
 """Number of visits (and thus simulations) before expanding the node"""
 
 class Node():
@@ -62,7 +58,7 @@ class Node():
         self.parent: Union[Node, None] = parent
         self.availability: int = 0
         self.visits: int = 0
-        self.reward: int = 0
+        self.reward: float = 0
         self.children: List[Node] = []
         self.outcome_p0: Dict[str, int] = {"humble": 0, "defeated": 0,
                            "victorious": 0, "greedy": 0}
@@ -133,6 +129,10 @@ class Node():
 def upper_confidence_bound(node: Node) -> float:
     """Output Upper Confidence Bound formula result for the given node """
     return node.reward / node.visits + K * sqrt(log(node.availability) / node.visits)
+
+def logistic(x: float) -> float:
+    """Apply the logistic function to the input """
+    return 1/(1+exp(-x))
 
 def aquire_knowledge(state: State) -> Knowledge:
     """Extract knowledge on current state from past plays """
@@ -274,6 +274,7 @@ def select_play(game: Game, duration: float, runs: int) -> Union[Play, bool]:
     """Select one play based on MCTS simulations """
     state: State = get_state_from_game(game)
     allowed: List[Play] = list_allowed(state, state["current_player"])
+    max_running_time = duration*2
     if len(allowed) == 0:
         return False
     if len(allowed) == 1:
@@ -284,8 +285,8 @@ def select_play(game: Game, duration: float, runs: int) -> Union[Play, bool]:
     player: int = state["current_player"]
     knowledge: Knowledge = aquire_knowledge(state)
     start_time = time()
-    run_nbr = 0
-    while (time() - start_time) < duration:
+    selected: Node
+    while True:
         for _ in range(runs):
             rand_state: State = random_state(state, knowledge)
             node: Node = root
@@ -301,19 +302,23 @@ def select_play(game: Game, duration: float, runs: int) -> Union[Play, bool]:
                     rand_state, special_type = do_step(rand_state, node.play, special_type)
             scores = get_score(rand_state)
             score_diff = scores[player] - scores[other_player(player)]
-            reward = (9+score_diff)/18 # normalization 
+            reward: float = logistic(score_diff)
             while node.parent is not None:
                 node.visits += 1
                 if node.play[0] == player:
                     node.reward += reward
                 else:
-                    node.reward -= reward
+                    node.reward += 1 - reward
                 node = node.parent
             root.visits += 1
-        run_nbr += 1
-    # print(run_nbr)
-    selected: Node = max(root.children, key=lambda x:x.visits)
-    # print(selected.play[1], [(c.play[1], c.visits) for c in sorted(root.children, key=lambda x:x.visits, reverse=True)])
+        if (time() - start_time) > duration:
+            selected = max(root.children, key=lambda x:x.reward/x.visits)
+            if selected.play[1] == max(root.children, key=lambda x:x.visits).play[1]: # Checks if most visited is also the best reward
+                break
+            else:
+                if (time() - start_time > max_running_time):
+                    break
+                duration *= 1.1
     return selected.play
 
 def ai_play(game: Game, duration: float=TURN_DURATION, runs: int=NB_SIMUL_P0) -> Union[Play, bool]:

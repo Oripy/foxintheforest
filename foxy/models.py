@@ -68,5 +68,5 @@ class Games(db.Model):
 
     def __repr__(self):
         status = ["created", "started", "finished"][self.status]
-        return (f"Games('{self.match_id}', '{self.match_id.first_player}', "
-                f"'{self.match_id.second_player}', {status})")
+        return (f"Games('{self.match_id}', '{self.match.first_player}', "
+                f"'{self.match.second_player}', {status}, lock:{self.lock})")

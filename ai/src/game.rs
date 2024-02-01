@@ -1,4 +1,3 @@
-use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 
 use std::fmt;
@@ -47,20 +46,20 @@ impl fmt::Display for Game {
     }
 }
 
-fn card_stack_from_python(list: &PyList) -> Option<Vec<Option<Card>>> {
+fn card_stack_from_python(list: &PyList) -> Vec<Option<Card>> {
     let mut stack = Vec::new();
     for i in 0..list.len() {
-        let card: &PyList = list[i].extract().ok()?;
+        let card: &PyList = list[i].extract().unwrap();
         stack.push(Some(Card::new_from_python(card)));
     }
-    Some(stack)
+    stack
 }
 
-fn play_list_from_python(list: &PyList) -> Option<Vec<Play>> {
+fn play_list_from_python(list: &PyList) -> Vec<Play> {
     let mut play_list = Vec::new();
     for item in list.iter() {
-        let play: &PyList = item.extract().ok()?;
-        let player_python = play[0].extract::<i8>().ok()?;
+        let play: &PyList = item.extract().unwrap();
+        let player_python = play[0].extract::<i8>().unwrap();
         let mut player: Option<Player> = None;
         match player_python {
             0 => player = Some(Player::P0),
@@ -68,12 +67,12 @@ fn play_list_from_python(list: &PyList) -> Option<Vec<Play>> {
             _ => (),
         }
         let cur_play = Play {
-            player: player?,
-            card: Some(Card::new_from_python(play[1].extract().ok()?)).unwrap_or(Card {rank: None, suit: None}),
+            player: player.unwrap(),
+            card: Some(Card::new_from_python(play[1].extract().unwrap())).unwrap_or(Card {rank: None, suit: None}),
         };
         play_list.push(cur_play);
     }
-    Some(play_list)
+    play_list
 }
 
 impl Game {
@@ -88,7 +87,7 @@ impl Game {
         for (key, value) in dict.iter() {
             match key.to_string().as_str() {
                 "plays" => {
-                    game.plays = play_list_from_python(value.extract::<&PyList>().unwrap()).unwrap();
+                    game.plays = play_list_from_python(value.extract::<&PyList>().unwrap());
                 }
                 "first_player" => {
                     let player = value.extract::<i8>().unwrap();
@@ -99,15 +98,15 @@ impl Game {
                     }
                 }
                 "init_draw_deck" => {
-                    game.init_draw_deck = card_stack_from_python(value.extract::<&PyList>().unwrap()).unwrap_or(Vec::new());
+                    game.init_draw_deck = card_stack_from_python(value.extract::<&PyList>().unwrap());
                 }
                 "init_trump_card" => {
                     game.init_trump_card = Some(Card::new_from_python(value.extract().unwrap()));
                 }
                 "init_hands" => {
                     let init_hands = value.extract::<&PyList>().unwrap();
-                    game.init_hands.insert(Player::P0, card_stack_from_python(init_hands[0].extract::<&PyList>().unwrap()).unwrap_or(Vec::new()));
-                    game.init_hands.insert(Player::P1, card_stack_from_python(init_hands[1].extract::<&PyList>().unwrap()).unwrap_or(Vec::new()));
+                    game.init_hands.insert(Player::P0, card_stack_from_python(init_hands[0].extract::<&PyList>().unwrap()));
+                    game.init_hands.insert(Player::P1, card_stack_from_python(init_hands[1].extract::<&PyList>().unwrap()));
                 }
                 _ => {}
             }

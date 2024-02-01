@@ -14,7 +14,7 @@ pub struct Card {
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let suit_display = format!("{}", self.suit.as_ref().unwrap());
-        write!(f, "[{}{}]", self.rank.unwrap_or(0), suit_display)
+        write!(f, "[{}{}]", self.rank.unwrap(), suit_display)
     }
 }
 

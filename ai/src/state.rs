@@ -1,6 +1,5 @@
 use std::fmt;
 use std::collections::HashMap;
-use std::sync::BarrierWaitResult;
 
 use crate::player::Player;
 use crate::card::Card;
@@ -72,13 +71,11 @@ impl State {
         Ok(state)
     }
 
-    fn apply_play(&mut self, play: &Play) -> Result<(), InvalidPlay> {
+    pub fn apply_play(&mut self, play: &Play) -> Result<(), InvalidPlay> {
         if play.player != self.current_player {
             return Err(InvalidPlay);
         }
         if !self.hands[&self.current_player].contains(&Some(play.card)) {
-            let hand_strings: Vec<String> = self.hands[&self.current_player].clone().into_iter().map(|c| format!("{}", c.unwrap())).collect();
-            let hand_string = hand_strings.join(" ");
             return Err(InvalidPlay);
         }
         match &self.next_play_type {
@@ -143,6 +140,8 @@ impl State {
                     self.current_player = Player::P0;
                 }
                 self.leading_player = self.current_player;
+                self.discards.get_mut(&winner).unwrap().push(self.trick[&Player::P0].clone());
+                self.discards.get_mut(&winner).unwrap().push(self.trick[&Player::P1].clone());
                 self.trick = HashMap::from([(Player::P0, None), (Player::P1, None)]);
             } else {
                 self.current_player = self.current_player.next_player()

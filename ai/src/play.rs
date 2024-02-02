@@ -3,7 +3,7 @@ use std::fmt;
 use crate::player::Player;
 use crate::card::Card;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Play {
     pub player: Player,
     pub card: Card,

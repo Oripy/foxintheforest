@@ -4,7 +4,7 @@ use std::{cmp, fmt};
 
 use crate::suit::Suit;
 
-#[derive(Clone, Debug, Ord, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, Ord, PartialEq, Eq)]
 #[pyclass]
 pub struct Card {
     pub rank: Option<i8>,

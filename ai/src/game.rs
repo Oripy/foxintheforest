@@ -35,7 +35,11 @@ impl fmt::Display for Game {
         let plays_strings: Vec<String> = self.plays.clone().into_iter().map(|c| format!("{}", c)).collect();
         let plays_string = plays_strings.join(" ");
 
-        write!(f, "first player: {}, init_trump_card: {}, init_draw_deck: {:?}, Hands: P0: {:?}, P1: {:?}, Plays: {:?}", 
+        write!(f, "first player: {}\n\
+                init_trump_card: {}\n\
+                init_draw_deck: {:?}\n\
+                Hands: P0: {:?}, P1: {:?}\n\
+                Plays: {:?}", 
                 self.first_player.as_ref().unwrap(),
                 self.init_trump_card.as_ref().unwrap_or(&Card {rank: None, suit: None}),
                 init_draw_deck_string,
@@ -68,7 +72,7 @@ fn play_list_from_python(list: &PyList) -> Vec<Play> {
         }
         let cur_play = Play {
             player: player.unwrap(),
-            card: Some(Card::new_from_python(play[1].extract().unwrap())).unwrap_or(Card {rank: None, suit: None}),
+            card: Some(Card::new_from_python(play[1].extract().unwrap())).unwrap_or_default(),
         };
         play_list.push(cur_play);
     }

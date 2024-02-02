@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use std::fmt;
 
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 #[pyclass]
 pub enum Player {
     P0,
@@ -13,6 +13,16 @@ impl fmt::Display for Player {
         match self {
             Player::P0 => write!(f, "P0"),
             Player::P1 => write!(f, "P1"),
+        }
+    }
+}
+
+impl Player {
+    pub fn next_player(self) -> Player {
+        if self == Player::P0 {
+            return Player::P1
+        } else {
+            return Player::P0
         }
     }
 }

@@ -28,7 +28,7 @@ pub struct State {
     trick: HashMap<Player, Option<Card>>,
     current_player: Player,
     leading_player: Player,
-    score: HashMap<Player, i8>,
+    score: HashMap<Player, usize>,
     discards: HashMap<Player, Vec<Option<Card>>>,
     hands: HashMap<Player, Vec<Option<Card>>>,
     trump_card: Option<Card>,
@@ -38,9 +38,30 @@ pub struct State {
 
 impl fmt::Display for State {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut draw_deck_copy = self.draw_deck.clone();
+        draw_deck_copy.sort();
+        let draw_deck_strings: Vec<String> = draw_deck_copy.into_iter().map(|c| format!("{}", c.unwrap())).collect();
+        let draw_deck_string = draw_deck_strings.join(" ");
+
+        let mut hand_p0_copy = self.hands[&Player::P0].clone();
+        hand_p0_copy.sort();
+        let hand_p0_strings: Vec<String> = hand_p0_copy.into_iter().map(|c| format!("{}", c.unwrap())).collect();
+        let hand_p0_string = hand_p0_strings.join(" ");
+
         let plays_strings: Vec<String> = self.plays.clone().into_iter().map(|c| format!("{}", c)).collect();
         let plays_string = plays_strings.join(" ");
-        write!(f, "{:?} Not yet fully implemented", plays_string)
+        write!(f, "current player: {}\n\
+                   trump card: {}\n\
+                   draw deck: {}\n\
+                   hands: {}\n\
+                   score: {:?}\n\
+                   Plays: {:?}", 
+                   self.current_player,
+                   self.trump_card.as_ref().unwrap_or(&Card {rank: None, suit: None}),
+                   draw_deck_string,
+                   hand_p0_string,
+                   self.score,
+                   plays_string,)
     }
 }
 
@@ -69,6 +90,32 @@ impl State {
             };
         };
         Ok(state)
+    }
+
+    pub fn calculate_score(&mut self) {
+        self.score = HashMap::from([(Player::P0, 0), (Player::P1, 0)]);
+        let mut tricks_won: HashMap<Player, usize> = Default::default();
+        for player in [Player::P0, Player::P1] {
+            for card in &self.discards[&player] {
+                if card.unwrap().rank == Some(7) {
+                    *self.score.entry(player).or_default() += 1;
+                }
+            }
+            tricks_won.insert(player, self.discards[&player].len()/2);
+        }
+    
+        if tricks_won[&Player::P0] + tricks_won[&Player::P1] == 13 {
+            for player in [Player::P0, Player::P1] {
+                match tricks_won[&player] {
+                    0..=3 => *self.score.entry(player).or_default() += 6, // Humble
+                    4 => *self.score.entry(player).or_default() += 1, // Defeated
+                    5 => *self.score.entry(player).or_default() += 2, // Defeated
+                    6 => *self.score.entry(player).or_default() += 3, // Defeated
+                    7..=9 => *self.score.entry(player).or_default() += 6, // Victorious
+                    _ => (),
+                }
+            }
+        }
     }
 
     pub fn apply_play(&mut self, play: &Play) -> Result<(), InvalidPlay> {
@@ -148,6 +195,9 @@ impl State {
             }
         }
         self.plays.push(play.clone());
+        if self.hands[&Player::P0].len() == 0 && self.hands[&Player::P1].len() == 0 {
+            self.calculate_score();
+        }
         Ok(())
     }
 

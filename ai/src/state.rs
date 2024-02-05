@@ -3,17 +3,8 @@ use std::collections::HashMap;
 
 use crate::player::Player;
 use crate::card::Card;
-use crate::play::Play;
+use crate::play::{InvalidPlay, Play};
 use crate::game::Game;
-
-#[derive(Debug)]
-pub struct InvalidPlay;
-
-impl fmt::Display for InvalidPlay {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Play is invalid")
-    }
-}
 
 #[derive(PartialEq)]
 enum NextPlayType {

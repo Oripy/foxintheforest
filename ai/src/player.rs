@@ -1,5 +1,9 @@
 use pyo3::prelude::*;
 use std::fmt;
+use rand::{
+    distributions::{Distribution, Standard},
+    Rng,
+};
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 #[pyclass]
@@ -23,6 +27,15 @@ impl Player {
             return Player::P1
         } else {
             return Player::P0
+        }
+    }
+}
+
+impl Distribution<Player> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Player {
+        match rng.gen_range(0..=1) {
+            0 => Player::P0,
+            _ => Player::P1,
         }
     }
 }

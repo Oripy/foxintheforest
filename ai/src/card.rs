@@ -4,17 +4,17 @@ use std::{cmp, fmt};
 
 use crate::suit::Suit;
 
-#[derive(Clone, Copy, Debug, Default, Ord, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Ord, PartialEq, Eq)]
 #[pyclass]
 pub struct Card {
-    pub rank: Option<i8>,
-    pub suit: Option<Suit>,
+    pub rank: i8,
+    pub suit: Suit,
 }
 
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let suit_display = format!("{}", self.suit.as_ref().unwrap());
-        write!(f, "[{}{}]", self.rank.unwrap(), suit_display)
+        let suit_display = format!("{}", self.suit);
+        write!(f, "[{}{}]", self.rank, suit_display)
     }
 }
 
@@ -30,25 +30,26 @@ impl PartialOrd for Card {
 
 impl Card {
     pub fn new_from_python(list: &PyList) -> Card {
-        let mut card = Card { rank: None, suit: None };
+        let mut rank: i8 = 0;
+        let mut suit = Suit::C;
+        // let mut card = Card { rank: None, suit: None };
         for n in 0..2 {
             match n {
                 0 => {
-                    let rank = list[0].extract::<i8>().ok();
-                    card.rank = rank;
+                    rank = list[0].extract::<i8>().unwrap();
                 }
                 1 => {
-                    let suit = list[1].extract::<String>().ok();
-                    match suit.unwrap().as_str() {
-                        "h"=>card.suit = Some(Suit::H),
-                        "s"=>card.suit = Some(Suit::S),
-                        "c"=>card.suit = Some(Suit::C),
-                        _=> {}
+                    let suit_python = list[1].extract::<String>().ok();
+                    match suit_python.unwrap().as_str() {
+                        "h"=> suit = Suit::H,
+                        "s"=> suit = Suit::S,
+                        "c"=> suit = Suit::C,
+                        _=> {},
                     }
                 }
                 _ => {}
             }
         }
-        card
+        Card {rank, suit}
     }
 }

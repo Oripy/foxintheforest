@@ -30,26 +30,14 @@ impl PartialOrd for Card {
 
 impl Card {
     pub fn new_from_python(list: &PyList) -> Card {
-        let mut rank: i8 = 0;
-        let mut suit = Suit::C;
-        // let mut card = Card { rank: None, suit: None };
-        for n in 0..2 {
-            match n {
-                0 => {
-                    rank = list[0].extract::<i8>().unwrap();
-                }
-                1 => {
-                    let suit_python = list[1].extract::<String>().ok();
-                    match suit_python.unwrap().as_str() {
-                        "h"=> suit = Suit::H,
-                        "s"=> suit = Suit::S,
-                        "c"=> suit = Suit::C,
-                        _=> {},
-                    }
-                }
-                _ => {}
-            }
-        }
+        let rank = list[0].extract::<i8>().expect("Invalid rank provided.");
+        let suit_python = list[1].extract::<String>().ok();
+        let suit = match suit_python.expect("Invalid suit provided.").as_str() {
+            "h"=> Suit::H,
+            "s"=> Suit::S,
+            "c"=> Suit::C,
+            _ => panic!("Invalid suit provided.")
+        };
         Card {rank, suit}
     }
 }

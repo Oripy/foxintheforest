@@ -56,7 +56,7 @@ impl fmt::Display for Game {
 fn card_stack_from_python(list: &PyList) -> Vec<Card> {
     let mut stack = Vec::new();
     for i in 0..list.len() {
-        let card: &PyList = list[i].extract().unwrap();
+        let card: &PyList = list[i].extract().expect("Invalid card.");
         stack.push(Card::new_from_python(card));
     }
     stack
@@ -65,19 +65,16 @@ fn card_stack_from_python(list: &PyList) -> Vec<Card> {
 fn play_list_from_python(list: &PyList) -> Vec<Play> {
     let mut play_list = Vec::new();
     for item in list.iter() {
-        let play: &PyList = item.extract().unwrap();
-        let player_python = play[0].extract::<i8>().unwrap();
-        let mut player: Option<Player> = None;
-        match player_python {
-            0 => player = Some(Player::P0),
-            1 => player = Some(Player::P1),
-            _ => (),
-        }
-        let cur_play = Play {
-            player: player.unwrap(),
-            card: Card::new_from_python(play[1].extract().unwrap()),
+        let play: &PyList = item.extract().expect("Invalid play.");
+        let player = match play[0].extract::<i8>().expect("Invalid player.") {
+            0 => Player::P0,
+            1 => Player::P1,
+            _ => panic!("Invalid player."),
         };
-        play_list.push(cur_play);
+        play_list.push(Play {
+            player,
+            card: Card::new_from_python(play[1].extract().unwrap()),
+        });
     }
     play_list
 }

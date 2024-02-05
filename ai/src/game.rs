@@ -73,7 +73,7 @@ fn play_list_from_python(list: &PyList) -> Vec<Play> {
         };
         play_list.push(Play {
             player,
-            card: Card::new_from_python(play[1].extract().unwrap()),
+            card: Card::new_from_python(play[1].extract().expect("Invalid python input.")),
         });
     }
     play_list
@@ -124,7 +124,7 @@ impl Game {
                     init_trump_card = Some(Card::new_from_python(value.extract().expect("Can't read init_trump_card.")));
                 }
                 "init_hands" => {
-                    let init_hands_python = value.extract::<&PyList>().unwrap();
+                    let init_hands_python = value.extract::<&PyList>().expect("Invalid python input.");
                     init_hands.insert(Player::P0, card_stack_from_python(init_hands_python[0].extract::<&PyList>().expect("Can't read card.")));
                     init_hands.insert(Player::P1, card_stack_from_python(init_hands_python[1].extract::<&PyList>().expect("Can't read card.")));
                 }

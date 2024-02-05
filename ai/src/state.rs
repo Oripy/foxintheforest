@@ -45,7 +45,7 @@ impl fmt::Display for State {
         let trump_card: String;
         match self.trump_card {
             None => trump_card = String::from("--"),
-            _ => trump_card = format!("{}", self.trump_card.unwrap()),
+            _ => trump_card = format!("{:?}", self.trump_card),
         }
 
         write!(f, "current player: {}\n\
@@ -125,12 +125,12 @@ impl State {
         }
         match &self.next_play_type {
             NextPlayType::Normal => {
-                let index = self.hands[&self.current_player].iter().position(|&c| c == play.card).unwrap();
-                self.trick.insert(self.current_player, Some(self.hands.get_mut(&self.current_player).unwrap().remove(index)));
+                let index = self.hands[&self.current_player].iter().position(|&c| c == play.card).expect("Play invalid, card not in hand.");
+                self.trick.insert(self.current_player, Some(self.hands.get_mut(&self.current_player).expect("Play invalid, card not in hand.").remove(index)));
                 match &play.card.rank {
                     3 => {
                         self.next_play_type = NextPlayType::Trump;
-                        self.hands.get_mut(&self.current_player).unwrap().push(self.trump_card.unwrap().clone());
+                        self.hands.get_mut(&self.current_player).unwrap().push(self.trump_card.expect("Play invalid, no trump card to pick.").clone());
                         self.trump_card = None;
                     },
                     5 => {
@@ -141,24 +141,24 @@ impl State {
                 }
             },
             NextPlayType::Trump => {
-                let index = self.hands[&self.current_player].iter().position(|&c| c == play.card);
-                self.trump_card = Some(self.hands.get_mut(&self.current_player).unwrap().remove(index.unwrap()));
+                let index = self.hands[&self.current_player].iter().position(|&c| c == play.card).expect("Play invalid, card not in hand.");
+                self.trump_card = Some(self.hands.get_mut(&self.current_player).unwrap().remove(index));
                 self.next_play_type = NextPlayType::Normal;
             },
             NextPlayType::Draw => {
-                let index = self.hands[&self.current_player].iter().position(|&c| c == play.card).unwrap();
+                let index = self.hands[&self.current_player].iter().position(|&c| c == play.card).expect("Play invalid, card not in hand.");
                 self.private_discards.get_mut(&self.current_player).unwrap().push(self.hands.get_mut(&self.current_player).unwrap().remove(index));
                 self.next_play_type = NextPlayType::Normal;
             },
         }
         if self.next_play_type == NextPlayType::Normal {
-            if self.trick[&Player::P0] != None && self.trick[&Player::P1] != None {
+            if self.trick[&Player::P0].is_some() && self.trick[&Player::P1].is_some() {
                 let winner: Player;
-                let mut p0suit = self.trick[&Player::P0].unwrap().suit.clone();
-                let p0rank = self.trick[&Player::P0].unwrap().rank;
-                let mut p1suit = self.trick[&Player::P1].unwrap().suit.clone();
-                let p1rank = self.trick[&Player::P1].unwrap().rank;
-                let trump_suit = self.trump_card.unwrap().suit.clone();
+                let mut p0suit = self.trick[&Player::P0].expect("Can't be None as we tested with is_some").suit.clone();
+                let p0rank = self.trick[&Player::P0].expect("Can't be None as we tested with is_some").rank;
+                let mut p1suit = self.trick[&Player::P1].expect("Can't be None as we tested with is_some").suit.clone();
+                let p1rank = self.trick[&Player::P1].expect("Can't be None as we tested with is_some").rank;
+                let trump_suit = self.trump_card.expect("Can't be None as we tested with is_some").suit.clone();
                 if p0rank == 9 && p1rank != 9 {
                     p0suit = trump_suit;
                 }
@@ -200,11 +200,11 @@ impl State {
     }
 
     pub fn list_allowed(&self) -> Vec<Play> {
-        if self.trick[&self.current_player] != None || self.trick == HashMap::from([(Player::P0, None), (Player::P1, None)]) {
+        if self.trick[&self.current_player].is_some() || self.trick[&self.current_player.next_player()].is_none() {
             return self.hands[&self.current_player].clone().into_iter().map(|x| Play {player: self.current_player, card: x}).collect();
         }
         let mut allowed = Vec::new();
-        let other_card = &self.trick[&self.current_player.next_player()].unwrap();
+        let other_card = &self.trick[&self.current_player.next_player()].expect("Can't be None as we tested with is_none and returned.");
         
         let mut best_card: Option<Card> = None;
         for card in &self.hands[&self.current_player] {
@@ -213,10 +213,10 @@ impl State {
                     if card.rank == 1 {
                         allowed.push(Play {player: self.current_player, card: card.clone()});
                     } else {
-                        if best_card == None {
+                        if best_card.is_none() {
                             best_card = Some(card.clone());
                         } else {
-                            if card.rank > best_card.unwrap().rank {
+                            if card.rank > best_card.expect("Can't be none as we tested with is_none before.").rank {
                                 best_card = Some(card.clone());
                             }
                         }
@@ -226,8 +226,8 @@ impl State {
                 }
             }
         }
-        if best_card != None {
-            allowed.push(Play {player: self.current_player, card: best_card.unwrap()});
+        if best_card.is_some() {
+            allowed.push(Play {player: self.current_player, card: best_card.expect("Can't be None as we tested with is_some")});
         }
         if allowed.len() == 0 {
             return self.hands[&self.current_player].clone().into_iter().map(|x| Play {player: self.current_player, card: x}).collect();

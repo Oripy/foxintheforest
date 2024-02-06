@@ -35,13 +35,10 @@ fn print_allowed_from_python_game(dict: &PyDict) -> PyResult<String> {
 #[pyfunction]
 fn play_game() -> PyResult<String> {
     let game = Game::new();
-    println!("GAME: {}", game);
     let mut state = State::new(&game).ok().unwrap();
     while state.score == HashMap::from([(Player::P0, 0), (Player::P1, 0)]) {
-        println!("{}", state);
         let mut allowed = state.list_allowed();
         allowed.shuffle(&mut rand::thread_rng());
-        println!("{:?}", allowed);
         state.apply_play(&allowed[0]).ok();
     }
     Ok(format!("{}", state))

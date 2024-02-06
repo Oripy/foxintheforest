@@ -89,7 +89,6 @@ impl Game {
         }
         deck.shuffle(&mut rand::thread_rng());
         let first_player: Player = rand::random();
-        println!("{}", first_player);
         Game {
             plays: Vec::new(),
             first_player: first_player,

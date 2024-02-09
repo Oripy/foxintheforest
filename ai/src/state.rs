@@ -1,6 +1,8 @@
 use std::fmt;
 use std::collections::HashMap;
 
+use rand::seq::SliceRandom;
+
 use crate::player::Player;
 use crate::card::Card;
 use crate::play::{InvalidPlay, Play};
@@ -15,7 +17,6 @@ enum NextPlayType {
 
 pub struct State {
     plays: Vec<Play>,
-    private_discards: HashMap<Player, Vec<Card>>,
     trick: HashMap<Player, Option<Card>>,
     current_player: Player,
     leading_player: Player,
@@ -25,6 +26,7 @@ pub struct State {
     trump_card: Option<Card>,
     draw_deck: Vec<Card>,
     next_play_type: NextPlayType,
+    private_discards: HashMap<Player, Vec<Card>>,
 }
 
 impl fmt::Display for State {
@@ -39,6 +41,11 @@ impl fmt::Display for State {
         let hand_p0_strings: Vec<String> = hand_p0_copy.into_iter().map(|c| format!("{}", c)).collect();
         let hand_p0_string = hand_p0_strings.join(" ");
 
+        let mut hand_p1_copy = self.hands[&Player::P1].clone();
+        hand_p1_copy.sort();
+        let hand_p1_strings: Vec<String> = hand_p1_copy.into_iter().map(|c| format!("{}", c)).collect();
+        let hand_p1_string = hand_p1_strings.join(" ");
+
         let plays_strings: Vec<String> = self.plays.clone().into_iter().map(|c| format!("{}", c)).collect();
         let plays_string = plays_strings.join(" ");
 
@@ -51,13 +58,14 @@ impl fmt::Display for State {
         write!(f, "current player: {}\n\
                    trump card: {}\n\
                    draw deck: {}\n\
-                   hands: {}\n\
+                   hands: P0: {:?}, P1: {:?}\n\
                    score: {:?}\n\
-                   Plays: {:?}", 
+                   plays: {:?}", 
                    self.current_player,
                    trump_card,
                    draw_deck_string,
                    hand_p0_string,
+                   hand_p1_string,
                    self.score,
                    plays_string,)
     }
@@ -67,7 +75,6 @@ impl State {
     pub fn new(game: &Game) -> Result<State, InvalidPlay> {
         let mut state = State {
             plays: Vec::new(),
-            private_discards: HashMap::from([(Player::P0, Vec::new()), (Player::P1, Vec::new())]),
             trick: HashMap::from([(Player::P0, None), (Player::P1, None)]),
             current_player: game.first_player.clone(),
             leading_player: game.first_player.clone(),
@@ -77,6 +84,7 @@ impl State {
             trump_card: Some(game.init_trump_card.clone()),
             draw_deck: game.init_draw_deck.clone(),
             next_play_type: NextPlayType::Normal,
+            private_discards: HashMap::from([(Player::P0, Vec::new()), (Player::P1, Vec::new())]),
         };
         for p in &game.plays {
             match state.apply_play(p) {
@@ -231,5 +239,35 @@ impl State {
             return self.hands[&self.current_player].clone().into_iter().map(|x| Play {player: self.current_player, card: x}).collect();
         }
         return allowed
+    }
+
+    pub fn get_plausible_state(&self, player: Player) -> State {
+        let mut remaining_cards: Vec<Card> = Vec::new();
+        for card in &self.hands[&player.next_player()] {
+            remaining_cards.push(card.clone());
+        }
+        for card in &self.draw_deck {
+            remaining_cards.push(card.clone());
+        }
+        for card in &self.private_discards[&player.next_player()] {
+            remaining_cards.push(card.clone());
+        }
+        remaining_cards.shuffle(&mut rand::thread_rng());
+        let opponent_hand = remaining_cards.drain(0..self.hands[&player.next_player()].len()).collect();
+        let draw_deck = remaining_cards.drain(0..self.draw_deck.len()).collect();
+        let opponent_private_discard = remaining_cards.drain(0..self.private_discards[&player.next_player()].len()).collect();
+        State {
+            plays: self.plays.clone(),
+            trick: self.trick.clone(),
+            current_player: self.current_player.clone(),
+            leading_player: self.leading_player.clone(),
+            score: self.score.clone(),
+            discards: self.discards.clone(),
+            hands: HashMap::from([(player, self.hands[&player].clone()), (player.next_player(), opponent_hand)]),
+            trump_card: self.trump_card.clone(),
+            draw_deck: draw_deck,
+            next_play_type: NextPlayType::Normal,
+            private_discards: HashMap::from([(player, self.private_discards[&player].clone()), (player.next_player(), opponent_private_discard)]),
+        }
     }
 }

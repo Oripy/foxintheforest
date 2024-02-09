@@ -44,11 +44,26 @@ fn play_game() -> PyResult<String> {
     Ok(format!("{}", state))
 }
 
+#[pyfunction]
+fn generate_plausible_states() -> PyResult<String> {
+    let game = Game::new();
+    let state = State::new(&game).ok().unwrap();
+    println!("-- Initial state --");
+    println!("{}", state);
+    println!("-- Generated state --");
+    for _ in 0..10 {
+        let new_state = state.get_plausible_state(Player::P0);
+        println!("{}", new_state);
+    }
+    Ok(String::from("-- Done --"))
+}
+
 #[pymodule]
 fn ai(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(print_game_from_python, m)?)?;
     m.add_function(wrap_pyfunction!(print_state_from_python_game, m)?)?;
     m.add_function(wrap_pyfunction!(print_allowed_from_python_game, m)?)?;
     m.add_function(wrap_pyfunction!(play_game, m)?)?;
+    m.add_function(wrap_pyfunction!(generate_plausible_states, m)?)?;
     Ok(())
 }

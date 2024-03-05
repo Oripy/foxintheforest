@@ -24,9 +24,9 @@ impl fmt::Display for Player {
 impl Player {
     pub fn next_player(self) -> Player {
         if self == Player::P0 {
-            return Player::P1
+            Player::P1
         } else {
-            return Player::P0
+            Player::P0
         }
     }
 }

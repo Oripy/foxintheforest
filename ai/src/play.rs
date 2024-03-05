@@ -12,7 +12,7 @@ impl fmt::Display for InvalidPlay {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Play {
     pub player: Player,
     pub card: Card,

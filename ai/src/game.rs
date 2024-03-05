@@ -84,14 +84,14 @@ impl Game {
         let mut deck: Vec<Card> = Vec::new();
         for rank in 1..=11 {
             for suit in [Suit::H, Suit::S, Suit::C] {
-                deck.push(Card {rank: rank, suit: suit})
+                deck.push(Card {rank, suit})
             }
         }
         deck.shuffle(&mut rand::thread_rng());
         let first_player: Player = rand::random();
         Game {
             plays: Vec::new(),
-            first_player: first_player,
+            first_player,
             init_draw_deck: deck.drain(0..6).collect(),
             init_trump_card: deck.drain(0..1).collect::<Vec<_>>()[0],
             init_hands: HashMap::from([(Player::P0, deck.drain(0..13).collect()), (Player::P1, deck.drain(0..13).collect())]),

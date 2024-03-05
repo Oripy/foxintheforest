@@ -4,7 +4,7 @@ use std::{cmp, fmt};
 
 use crate::suit::Suit;
 
-#[derive(Clone, Copy, Debug, Ord, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[pyclass]
 pub struct Card {
     pub rank: i8,
@@ -18,13 +18,19 @@ impl fmt::Display for Card {
     }
 }
 
+impl Ord for Card {
+    fn cmp(&self, other: &Card) -> cmp::Ordering {
+        if self.suit == other.suit {
+            self.rank.cmp(&other.rank)
+        } else {
+            self.suit.cmp(&other.suit)
+        }
+    }
+}
+
 impl PartialOrd for Card {
     fn partial_cmp(&self, other: &Card) -> Option<cmp::Ordering> {
-        if self.suit == other.suit {
-            Some(self.rank.cmp(&other.rank))
-        } else {
-            Some(self.suit.cmp(&other.suit))
-        }
+        Some(self.cmp(other))
     }
 }
 

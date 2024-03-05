@@ -8,20 +8,21 @@ use crate::card::Card;
 use crate::play::{InvalidPlay, Play};
 use crate::game::Game;
 
-#[derive(PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 enum NextPlayType {
     Normal,
     Trump,
     Draw,
 }
 
+#[derive(Clone)]
 pub struct State {
-    plays: Vec<Play>,
-    trick: HashMap<Player, Option<Card>>,
+    pub plays: Vec<Play>,
+    pub trick: HashMap<Player, Option<Card>>,
     current_player: Player,
     leading_player: Player,
     pub score: HashMap<Player, usize>,
-    discards: HashMap<Player, Vec<Card>>,
+    pub discards: HashMap<Player, Vec<Card>>,
     hands: HashMap<Player, Vec<Card>>,
     trump_card: Option<Card>,
     draw_deck: Vec<Card>,
@@ -49,11 +50,10 @@ impl fmt::Display for State {
         let plays_strings: Vec<String> = self.plays.clone().into_iter().map(|c| format!("{}", c)).collect();
         let plays_string = plays_strings.join(" ");
 
-        let trump_card: String;
-        match self.trump_card {
-            None => trump_card = String::from("--"),
-            _ => trump_card = format!("{:?}", self.trump_card),
-        }
+        let trump_card: String = match self.trump_card {
+            None => String::from("--"),
+            _ => format!("{:?}", self.trump_card),
+        };
 
         write!(f, "current player: {}\n\
                    trump card: {}\n\
@@ -72,16 +72,16 @@ impl fmt::Display for State {
 }
 
 impl State {
-    pub fn new(game: &Game) -> Result<State, InvalidPlay> {
+    pub fn from(game: &Game) -> Result<State, InvalidPlay> {
         let mut state = State {
             plays: Vec::new(),
             trick: HashMap::from([(Player::P0, None), (Player::P1, None)]),
-            current_player: game.first_player.clone(),
-            leading_player: game.first_player.clone(),
+            current_player: game.first_player,
+            leading_player: game.first_player,
             score: HashMap::from([(Player::P0, 0), (Player::P1, 0)]),
             discards: HashMap::from([(Player::P0, Vec::new()), (Player::P1, Vec::new())]),
             hands: game.init_hands.clone(),
-            trump_card: Some(game.init_trump_card.clone()),
+            trump_card: Some(game.init_trump_card),
             draw_deck: game.init_draw_deck.clone(),
             next_play_type: NextPlayType::Normal,
             private_discards: HashMap::from([(Player::P0, Vec::new()), (Player::P1, Vec::new())]),
@@ -138,7 +138,7 @@ impl State {
                 match &play.card.rank {
                     3 => {
                         self.next_play_type = NextPlayType::Trump;
-                        self.hands.get_mut(&self.current_player).unwrap().push(self.trump_card.ok_or(InvalidPlay)?.clone());
+                        self.hands.get_mut(&self.current_player).unwrap().push(self.trump_card.ok_or(InvalidPlay)?);
                         self.trump_card = None;
                     },
                     5 => {
@@ -162,11 +162,11 @@ impl State {
         if self.next_play_type == NextPlayType::Normal {
             if self.trick[&Player::P0].is_some() && self.trick[&Player::P1].is_some() {
                 let winner: Player;
-                let mut p0suit = self.trick[&Player::P0].unwrap().suit.clone();
+                let mut p0suit = self.trick[&Player::P0].unwrap().suit;
                 let p0rank = self.trick[&Player::P0].unwrap().rank;
-                let mut p1suit = self.trick[&Player::P1].unwrap().suit.clone();
+                let mut p1suit = self.trick[&Player::P1].unwrap().suit;
                 let p1rank = self.trick[&Player::P1].unwrap().rank;
-                let trump_suit = self.trump_card.unwrap().suit.clone();
+                let trump_suit = self.trump_card.unwrap().suit;
                 if p0rank == 9 && p1rank != 9 {
                     p0suit = trump_suit;
                 }
@@ -193,15 +193,15 @@ impl State {
                     self.current_player = Player::P0;
                 }
                 self.leading_player = self.current_player;
-                self.discards.get_mut(&winner).unwrap().push(self.trick[&Player::P0].unwrap().clone());
-                self.discards.get_mut(&winner).unwrap().push(self.trick[&Player::P1].unwrap().clone());
+                self.discards.get_mut(&winner).unwrap().push(self.trick[&Player::P0].unwrap());
+                self.discards.get_mut(&winner).unwrap().push(self.trick[&Player::P1].unwrap());
                 self.trick = HashMap::from([(Player::P0, None), (Player::P1, None)]);
             } else {
                 self.current_player = self.current_player.next_player()
             }
         }
-        self.plays.push(play.clone());
-        if self.hands[&Player::P0].len() == 0 && self.hands[&Player::P1].len() == 0 {
+        self.plays.push(*play);
+        if self.hands[&Player::P0].is_empty() && self.hands[&Player::P1].is_empty() {
             self.calculate_score();
         }
         Ok(())
@@ -219,38 +219,34 @@ impl State {
             if other_card.suit == card.suit {
                 if other_card.rank == 11 {
                     if card.rank == 1 {
-                        allowed.push(Play {player: self.current_player, card: card.clone()});
-                    } else {
-                        if best_card.is_none() {
-                            best_card = Some(card.clone());
-                        } else if card.rank > best_card.unwrap().rank {
-                            best_card = Some(card.clone());
-                        }
+                        allowed.push(Play {player: self.current_player, card: *card});
+                    } else if card.rank > best_card.unwrap().rank {
+                        best_card = Some(*card);
                     }
                 } else {
-                    allowed.push(Play {player: self.current_player, card: card.clone()});
+                    allowed.push(Play {player: self.current_player, card: *card});
                 }
             }
         }
-        if best_card.is_some() {
-            allowed.push(Play {player: self.current_player, card: best_card.unwrap()});
+        if let Some(best_card_real) = best_card {
+            allowed.push(Play {player: self.current_player, card: best_card_real});
         }
-        if allowed.len() == 0 {
+        if allowed.is_empty() {
             return self.hands[&self.current_player].clone().into_iter().map(|x| Play {player: self.current_player, card: x}).collect();
         }
-        return allowed
+        allowed
     }
 
     pub fn get_plausible_state(&self, player: Player) -> State {
         let mut remaining_cards: Vec<Card> = Vec::new();
         for card in &self.hands[&player.next_player()] {
-            remaining_cards.push(card.clone());
+            remaining_cards.push(*card);
         }
         for card in &self.draw_deck {
-            remaining_cards.push(card.clone());
+            remaining_cards.push(*card);
         }
         for card in &self.private_discards[&player.next_player()] {
-            remaining_cards.push(card.clone());
+            remaining_cards.push(*card);
         }
         remaining_cards.shuffle(&mut rand::thread_rng());
         let opponent_hand = remaining_cards.drain(0..self.hands[&player.next_player()].len()).collect();
@@ -259,13 +255,13 @@ impl State {
         State {
             plays: self.plays.clone(),
             trick: self.trick.clone(),
-            current_player: self.current_player.clone(),
-            leading_player: self.leading_player.clone(),
+            current_player: self.current_player,
+            leading_player: self.leading_player,
             score: self.score.clone(),
             discards: self.discards.clone(),
             hands: HashMap::from([(player, self.hands[&player].clone()), (player.next_player(), opponent_hand)]),
-            trump_card: self.trump_card.clone(),
-            draw_deck: draw_deck,
+            trump_card: self.trump_card,
+            draw_deck,
             next_play_type: NextPlayType::Normal,
             private_discards: HashMap::from([(player, self.private_discards[&player].clone()), (player.next_player(), opponent_private_discard)]),
         }

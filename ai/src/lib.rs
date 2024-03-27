@@ -1,3 +1,4 @@
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use rand::prelude::*;
 
@@ -14,6 +15,7 @@ mod node;
 use crate::game::Game;
 use crate::state::State;
 use crate::player::Player;
+use crate::node::Node;
 
 #[pyfunction]
 fn print_game_from_python(dict: &PyDict) -> PyResult<String> {
@@ -68,6 +70,23 @@ fn generate_plausible_states() -> PyResult<String> {
     Ok(String::from("-- Done --"))
 }
 
+// #[pyfunction]
+// fn test_node() -> PyResult<String> {
+//     let game = Game::new();
+//     let root_id = Node::new();
+//     let guard = NODE_LIST.lock().unwrap();
+//     let root = &guard[root_id];
+//     let state = State::from(&game).unwrap();
+//     for i in 0..100 {
+//         let allowed = state.list_allowed();
+//         if !root.get_untried(allowed).is_empty() {
+//             let selected = &root.ucb_select_child(allowed).unwrap();
+//         }
+//     }
+
+//     Ok(String::from("-- Done --"))
+// }
+
 #[pymodule]
 fn ai(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(print_game_from_python, m)?)?;
@@ -75,5 +94,6 @@ fn ai(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(print_allowed_from_python_game, m)?)?;
     m.add_function(wrap_pyfunction!(play_game, m)?)?;
     m.add_function(wrap_pyfunction!(generate_plausible_states, m)?)?;
+    // m.add_function(wrap_pyfunction!(test_node, m)?)?;
     Ok(())
 }
